@@ -70,3 +70,4 @@ Last updated: 2026-08-13
 - C# Release build: passed with zero errors. A Newtonsoft version-resolution warning originates from the pinned legacy build package/game assembly combination and the mod does not directly use Newtonsoft.
 - SMAPI startup: passed on 2026-08-13. It reported Stardew Valley 1.6.0 build 24079, SMAPI 4.0.6, loaded Stardew AI 0.1.0, registered `LeftAlt + D1`, found no software conflicts, and reached the title screen.
 - Full in-save UI interaction cannot be automated safely and remains the only acceptance test.
+- Linus was added as the second original external profile to make the first interaction test easier near his mountain tent.

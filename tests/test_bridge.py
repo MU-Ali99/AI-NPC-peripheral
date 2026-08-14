@@ -9,7 +9,7 @@ from npc_bridge.config import Settings
 
 class FakeBackend(LlmBackend):
     async def generate(self, system: str, user: str) -> str:
-        assert "Abigail" in system
+        assert "Stardew Valley" in system
         assert "Why are you outside?" in user
         return 'Abigail: "The rain makes everything feel like an adventure."'
 
@@ -54,6 +54,14 @@ def test_unknown_profile_is_safe() -> None:
     assert response.json()["success"] is False
 
 
+def test_linus_profile_is_available() -> None:
+    payload = request()
+    payload["npc"] = {"id": "Linus", "displayName": "Linus", "friendshipHearts": 1}
+    response = TestClient(create_app(settings(), FakeBackend())).post("/v1/conversation", json=payload)
+    assert response.status_code == 200
+    assert response.json()["success"] is True
+
+
 def test_validation_rejects_empty_message() -> None:
     payload = request()
     payload["player"]["message"] = ""
@@ -63,4 +71,3 @@ def test_validation_rejects_empty_message() -> None:
 def test_clean_dialogue_truncates_on_word_boundary() -> None:
     result = clean_dialogue("one two three four", 14)
     assert result == "one two…"
-

@@ -17,7 +17,7 @@ The complete MVP is implemented and installed locally:
 - In-game text entry, nearest-NPC targeting, world/relationship context, and non-blocking HTTP.
 - NPCBridge FastAPI service with a versioned protocol and replaceable LLM backend.
 - Ollama `0.32.9` with `qwen2.5:1.5b` (approximately 986 MB model payload).
-- External original Abigail profile.
+- External original Abigail and Linus profiles.
 - Standalone Windows `NPCBridge.exe` package.
 
 Automated API, model, build, packaging, and SMAPI load checks pass. The remaining acceptance check is using `Alt+1` beside Abigail in a loaded save.
@@ -115,14 +115,14 @@ The mod creates `C:\Games\Stardew Valley\Mods\StardewAI\config.json` on first la
 
 - **Service unavailable:** run `scripts\start-system.ps1`, then open `http://127.0.0.1:8765/health` or run `scripts\test-bridge.ps1`.
 - **Hotkey does nothing:** launch through `StardewModdingAPI.exe`, load a save, close other menus, and stand near a villager.
-- **No profile:** the MVP intentionally supports Abigail only. Other NPCs return a safe error until a profile is added.
+- **No profile:** the prototype currently supports Abigail and Linus. Other NPCs return a safe error until a profile is added.
 - **Slow first response:** Ollama must load the model into memory on the first request.
 - **SMAPI update notice:** do not update SMAPI beyond 4.0.6 while the game remains at 1.6.0.
 - **Logs:** SMAPI logs are under `%APPDATA%\StardewValley\ErrorLogs`; NPCBridge logs to its console.
 
 ## Known limitations
 
-- One NPC profile (Abigail), text-to-text only.
+- Two NPC profiles (Abigail and Linus), text-to-text only.
 - No conversation memory, voice, generated quests, or autonomous behavior.
 - Generated dialogue uses a compatible vanilla dialogue box on Stardew 1.6.0.
 - The API has no authentication because it binds to `127.0.0.1` by default. Add network security before exposing it beyond the local PC.
