@@ -25,15 +25,15 @@ Last updated: 2026-08-13
 - SMAPI installer archive SHA-256: `8BD7373F10E05BAD969483CC963E785E49B9511A42D9ABF7E82E49E8518CDB8E`.
 - No original game files were modified during inspection.
 - The project intentionally pins SMAPI 4.0.6 because the game will remain on Stardew Valley 1.6.0. SMAPI 4.0.6 is the last release explicitly documented for Stardew Valley 1.6.0 or later; newer SMAPI releases require newer game versions.
-- SMAPI file/version verification passed. Interactive game launch verification remains pending.
+- SMAPI file/version and title-screen launch verification passed.
 
 ### Development tools
 
 - Git: `2.54.0.windows.1` installed.
-- .NET SDK: `10.0.203` installed; target framework requirements will be selected when scaffolding the SMAPI project.
-- Python: not installed. The `python.exe` command currently resolves only to the nonfunctional Microsoft Store alias.
-- Python launcher (`py`): not installed.
-- Ollama: not installed.
+- .NET SDK: `10.0.203` installed; the mod targets .NET 6 for the pinned game/SMAPI build.
+- Python: `3.12.10` installed through winget (`Python.Python.3.12`).
+- Ollama: `0.32.9` installed through winget (`Ollama.Ollama`); API verified at `http://127.0.0.1:11434`.
+- Model: `qwen2.5:1.5b`, approximately 986 MB model payload, pulled with `ollama pull qwen2.5:1.5b`.
 
 ## Safety and repository policy
 
@@ -43,21 +43,30 @@ Last updated: 2026-08-13
 
 ## Milestone status
 
-1. Inspect Stardew and prepare SMAPI development — **in progress**; inspection and SMAPI 4.0.6 installation complete, interactive launch verification pending.
-2. Check/install dependencies — **in progress**; Git and .NET found, Python and Ollama missing.
-3. Configure Ollama and verify inference — pending.
-4. Build NPCBridge — pending.
-5. Test NPCBridge over HTTP — pending.
-6. Create and load basic SMAPI mod — pending.
-7. Implement Alt+1 NPC detection — pending.
-8. Implement in-game text input — pending.
-9. Connect SMAPI to NPCBridge — pending.
-10. Connect NPCBridge to Ollama — pending.
-11. Return dialogue to Stardew — pending.
-12. Complete Abigail end-to-end test — pending.
-13. Package NPCBridge as a Windows executable — pending.
+1. Inspect Stardew and prepare SMAPI development — **complete**; SMAPI launched the game and loaded the mod at the title screen.
+2. Check/install dependencies — **complete**.
+3. Configure Ollama and verify inference — **complete**.
+4. Build NPCBridge — **complete**.
+5. Test NPCBridge over HTTP — **complete**; five automated tests plus live Ollama calls pass.
+6. Create and load basic SMAPI mod — **complete**; confirmed in SMAPI log.
+7. Implement Alt+1 NPC detection — **complete**.
+8. Implement in-game text input — **complete**.
+9. Connect SMAPI to NPCBridge — **complete**.
+10. Connect NPCBridge to Ollama — **complete**.
+11. Return dialogue to Stardew — **implemented; interactive verification pending**.
+12. Complete Abigail end-to-end test — **interactive in-save acceptance test pending**.
+13. Package NPCBridge as a Windows executable — **complete and live-tested**.
 
 ## Next actions
 
-1. Launch `C:\Games\Stardew Valley\StardewModdingAPI.exe`, reach the title screen, then close it to verify SMAPI startup.
-2. Install Python and Ollama, then continue bridge implementation.
+1. Run `scripts\start-system.ps1`.
+2. Launch SMAPI, load a save, stand beside Abigail, and complete the documented Alt+1 acceptance test.
+
+## Verification record
+
+- Python tests: 5 passed.
+- Live source bridge health and conversation calls: passed.
+- Live packaged EXE health and conversation calls: passed.
+- C# Release build: passed with zero errors. A Newtonsoft version-resolution warning originates from the pinned legacy build package/game assembly combination and the mod does not directly use Newtonsoft.
+- SMAPI startup: passed on 2026-08-13. It reported Stardew Valley 1.6.0 build 24079, SMAPI 4.0.6, loaded Stardew AI 0.1.0, registered `LeftAlt + D1`, found no software conflicts, and reached the title screen.
+- Full in-save UI interaction cannot be automated safely and remains the only acceptance test.
