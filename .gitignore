@@ -1,0 +1,36 @@
+# Local game installers and game files (never commit copyrighted assets)
+/Stardew Valley/
+
+# Machine-local configuration
+/config/local.json
+*.local.json
+.env
+.env.*
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+build/
+dist/
+*.spec
+
+# .NET / SMAPI mod builds
+bin/
+obj/
+*.user
+*.suo
+
+# Packaged artifacts and logs
+/artifacts/
+*.log
+
+# Editors and operating systems
+.vs/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+

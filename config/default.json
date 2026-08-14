@@ -1,0 +1,16 @@
+{
+  "bridge": {
+    "host": "127.0.0.1",
+    "port": 8765,
+    "requestTimeoutSeconds": 90
+  },
+  "ollama": {
+    "endpoint": "http://127.0.0.1:11434",
+    "model": "to-be-selected",
+    "timeoutSeconds": 75
+  },
+  "dialogue": {
+    "maximumCharacters": 400
+  }
+}
+
