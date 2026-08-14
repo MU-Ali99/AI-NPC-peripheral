@@ -1,0 +1,15 @@
+pyproject.toml
+src/npc_bridge/__init__.py
+src/npc_bridge/__main__.py
+src/npc_bridge/app.py
+src/npc_bridge/backends.py
+src/npc_bridge/config.py
+src/npc_bridge/models.py
+src/npc_bridge/profiles.py
+src/npc_bridge/prompt.py
+src/npc_bridge.egg-info/PKG-INFO
+src/npc_bridge.egg-info/SOURCES.txt
+src/npc_bridge.egg-info/dependency_links.txt
+src/npc_bridge.egg-info/entry_points.txt
+src/npc_bridge.egg-info/requires.txt
+src/npc_bridge.egg-info/top_level.txt

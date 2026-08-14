@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.ai-npc-peripheral/protocol/conversation-v1.schema.json",
+  "title": "NPCBridge Conversation Request v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["protocolVersion", "game", "npc", "world", "player"],
+  "properties": {
+    "protocolVersion": { "const": "1.0" },
+    "game": { "const": "stardew_valley" },
+    "npc": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "displayName", "friendshipHearts"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "displayName": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "friendshipHearts": { "type": "integer", "minimum": 0, "maximum": 14 }
+      }
+    },
+    "world": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["location", "season", "day", "time", "weather"],
+      "properties": {
+        "location": { "type": "string" }, "season": { "type": "string" },
+        "day": { "type": "integer" }, "time": { "type": "integer" }, "weather": { "type": "string" }
+      }
+    },
+    "player": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "message"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "message": { "type": "string", "minLength": 1, "maxLength": 500 }
+      }
+    }
+  }
+}
+

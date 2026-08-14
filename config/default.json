@@ -6,11 +6,10 @@
   },
   "ollama": {
     "endpoint": "http://127.0.0.1:11434",
-    "model": "to-be-selected",
+    "model": "qwen2.5:1.5b",
     "timeoutSeconds": 75
   },
   "dialogue": {
     "maximumCharacters": 400
   }
 }
-
