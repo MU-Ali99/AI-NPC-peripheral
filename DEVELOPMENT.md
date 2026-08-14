@@ -19,10 +19,13 @@ Last updated: 2026-08-13
 - Distribution indicators: GOG metadata is present.
 - Executable: `C:\Games\Stardew Valley\Stardew Valley.exe`
 - Detected file/product version: `1.6.0.24079` / `1.6.0`
-- SMAPI status: not installed (`StardewModdingAPI.exe`, `Mods`, and `smapi-internal` absent).
+- SMAPI status: version `4.0.6` manually installed from the official GitHub release payload using the release's documented manual procedure.
+- SMAPI executable: `C:\Games\Stardew Valley\StardewModdingAPI.exe`
+- Bundled mods installed: Console Commands and Save Backup.
+- SMAPI installer archive SHA-256: `8BD7373F10E05BAD969483CC963E785E49B9511A42D9ABF7E82E49E8518CDB8E`.
 - No original game files were modified during inspection.
-- Current SMAPI 4.5.2 requires Stardew Valley 1.6.14 or later, so the game must be updated before installing current SMAPI.
-- Vanilla launch and SMAPI launch verification remain pending.
+- The project intentionally pins SMAPI 4.0.6 because the game will remain on Stardew Valley 1.6.0. SMAPI 4.0.6 is the last release explicitly documented for Stardew Valley 1.6.0 or later; newer SMAPI releases require newer game versions.
+- SMAPI file/version verification passed. Interactive game launch verification remains pending.
 
 ### Development tools
 
@@ -40,7 +43,7 @@ Last updated: 2026-08-13
 
 ## Milestone status
 
-1. Inspect Stardew and prepare SMAPI development — **blocked pending game update to 1.6.14+**, then SMAPI install and launch verification.
+1. Inspect Stardew and prepare SMAPI development — **in progress**; inspection and SMAPI 4.0.6 installation complete, interactive launch verification pending.
 2. Check/install dependencies — **in progress**; Git and .NET found, Python and Ollama missing.
 3. Configure Ollama and verify inference — pending.
 4. Build NPCBridge — pending.
@@ -56,9 +59,5 @@ Last updated: 2026-08-13
 
 ## Next actions
 
-1. Update the GOG Stardew Valley installation to version 1.6.14 or later.
-2. Launch vanilla Stardew once and close it.
-3. Install the current official SMAPI release using its standard installer.
-4. Verify launch through SMAPI.
-5. Install Python and Ollama, then continue bridge implementation.
-
+1. Launch `C:\Games\Stardew Valley\StardewModdingAPI.exe`, reach the title screen, then close it to verify SMAPI startup.
+2. Install Python and Ollama, then continue bridge implementation.
