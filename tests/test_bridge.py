@@ -147,3 +147,15 @@ def test_terse_or_repeated_dialogue_is_retried() -> None:
     backend=TerseBackend()
     result=TestClient(create_app(settings(),backend)).post("/v2/conversation",json=payload("Leave me alone.")).json()
     assert result["success"] and result["dialogue"]=="You have worn out your welcome here." and backend.calls==2
+
+def test_long_exact_recent_reply_is_retried() -> None:
+    class RepeatingBackend(FakeBackend):
+        async def generate(self,system,user,output_schema=None):
+            self.calls+=1
+            dialogue="That is enough. I do not appreciate that language around here." if self.calls<=2 else "Leave my camp until you can speak with respect."
+            return json.dumps({"dialogue":dialogue,"sentiment":"NEGATIVE","facialExpression":"a stern frown"})
+    backend=RepeatingBackend()
+    client=TestClient(create_app(settings(),backend))
+    assert client.post("/v2/conversation",json=payload("First insult.")).json()["success"]
+    second=client.post("/v2/conversation",json=payload("Second insult.")).json()
+    assert second["dialogue"]=="Leave my camp until you can speak with respect." and backend.calls==3

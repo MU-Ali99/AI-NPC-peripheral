@@ -131,7 +131,7 @@ Required output shape:
         words=dialogue.split()
         if len(dialogue.replace(" ","")) < 8:
             return True
-        return len(words) <= 5 and any(dialogue==normalized(turn.npc_dialogue) for turn in history if turn.npc_dialogue)
+        return any(dialogue==normalized(turn.npc_dialogue) for turn in history if turn.npc_dialogue)
 
     @staticmethod
     def clean_dialogue(text: str, maximum: int) -> str:
