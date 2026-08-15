@@ -27,6 +27,7 @@ obj/
 # Packaged artifacts and logs
 /artifacts/
 /reports/
+/data/
 *.log
 
 # Editors and operating systems

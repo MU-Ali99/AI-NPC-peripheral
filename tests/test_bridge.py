@@ -32,7 +32,7 @@ class BrokenBackend(LlmBackend):
 
 
 def settings() -> Settings:
-    return Settings(profiles_path=Path(__file__).parents[1] / "npc-profiles")
+    return Settings(profiles_path=Path(__file__).parents[1] / "npc-profiles", memory_path=Path(":memory:"))
 
 
 def request_v1() -> dict:
@@ -191,3 +191,38 @@ def test_validation_rejects_empty_message() -> None:
 
 def test_clean_dialogue_truncates_on_word_boundary() -> None:
     assert PersonaEngine.clean_dialogue("one two three four", 14) == "one two…"
+
+
+def test_repeated_compliments_have_diminishing_and_negative_impact() -> None:
+    client = TestClient(create_app(settings(), FakeBackend()))
+    deltas = []
+    for _ in range(4):
+        payload = request_v2()
+        payload["player"]["message"] = "You are beautiful and amazing."
+        deltas.append(client.post("/v2/conversation", json=payload).json()["relationshipDelta"])
+    assert deltas == [8, 3, 0, -2]
+
+
+def test_kind_person_is_recognized_as_a_compliment() -> None:
+    client = TestClient(create_app(settings(), FakeBackend()))
+    payload = request_v2()
+    payload["player"]["message"] = "You are a kind person, Linus."
+    response = client.post("/v2/conversation", json=payload).json()
+    assert response["relationshipDelta"] == 8
+
+
+def test_repeated_hostility_creates_persistent_grudge() -> None:
+    client = TestClient(create_app(settings(), FakeBackend()))
+    payload = request_v2()
+    payload["player"]["message"] = "Fuck you, I hate you."
+    first = client.post("/v2/conversation", json=payload).json()
+    second = client.post("/v2/conversation", json=payload).json()
+    assert first["relationshipDelta"] == -25
+    assert second["relationshipDelta"] == -35
+    assert second["memoryState"] == "holding_a_grudge"
+
+
+def test_response_contains_visible_reaction_fields() -> None:
+    response = TestClient(create_app(settings(), FakeBackend())).post("/v2/conversation", json=request_v2()).json()
+    assert response["facialExpression"] == "neutral"
+    assert response["bodyLanguage"] == "stands naturally"

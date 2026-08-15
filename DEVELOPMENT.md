@@ -46,18 +46,20 @@ The game executable and original assets were not replaced. The repository ignore
 - Results are queued back to the game thread before touching Stardew UI state.
 - Normal Stardew conversations are left alone; generated dialogue uses a separate key.
 - The bridge binds to localhost unless configured otherwise.
+- Relationship judgments use bounded deterministic rules after the model classifies the interaction. This keeps friendship changes predictable.
+- Compact interaction memory is stored in SQLite and scoped by game, player, and NPC.
 
 ## What has been verified
 
-- Sixteen Python tests pass.
+- Twenty Python tests pass.
 - Source-mode bridge health and conversation requests pass.
 - Packaged `NPCBridge.exe` health and conversation requests pass.
 - Live requests through Ollama return dialogue for Abigail and Linus.
 - The Stardew mod builds in Release mode with no compile errors.
 - SMAPI 4.0.6 launches Stardew 1.6.0 and loads Stardew AI successfully.
 - The mod configuration now uses `LeftAlt + D0`, shown to players as `Alt+0`.
-- Packaged NPCBridge 0.2.0 reports protocols 1.0 and 2.0 and completes a real v2 request through `qwen2.5:3b`.
-- Stardew AI 0.2.0 loads with the v2 endpoint at `http://127.0.0.1:8765/v2/conversation`.
+- Packaged NPCBridge reports protocols 1.0 and 2.0 and completes real v2 requests through `qwen2.5:3b`.
+- Stardew AI uses the v2 endpoint at `http://127.0.0.1:8765/v2/conversation`.
 
 The mod build reports a Newtonsoft version-resolution warning caused by the older SMAPI/game assembly combination. The mod does not use Newtonsoft directly, and the resulting assembly loads successfully.
 
@@ -80,6 +82,9 @@ The mod build reports a Newtonsoft version-resolution warning caused by the olde
 - [x] Add a game-neutral v2 adapter contract while retaining v1
 - [x] Add structured output validation and persona regression tooling
 - [x] Keep single-player paused during text input and model generation
+- [x] Persist per-character interaction memory and grudges
+- [x] Apply bounded conversation effects to Stardew friendship
+- [x] Show facial expression and body language with each response
 - [ ] Complete and record a full player-controlled conversation in a loaded save
 
 ## Releases
@@ -100,17 +105,12 @@ Introduced the game-agnostic v2 envelope, explicit profile IDs, optional context
 
 Expanded profiles with unique speech cadence, vocabulary, verbal habits, phrases to avoid, and situation-specific reactions. Added interaction classification for insults and prompt-injection attempts, plus guards against generic assistant and counselor phrasing.
 
+### v0.3.0
+
+Added persistent per-player relationship memory. Compliments now have diminishing returns, repeated flattery can become uncomfortable, and insults or hostility can create wariness and grudges. Replies include facial expression and body language, while the Stardew adapter applies the returned impact to the NPC's real friendship score.
+
 Detailed notes for the first snapshot are in `docs/releases/v0.1.0.md`.
 
 ## Next work
 
-The next refactor should keep the current network and mod path working while making the bridge protocol fully game-agnostic. The main tasks are:
-
-1. Introduce a generic conversation envelope without silently breaking protocol version 1.
-2. Load profiles by an explicit `profileId`.
-3. Separate persona rules from general knowledge instructions.
-4. Validate structured model output and keep optional emotion metadata.
-5. Add persona regression prompts for normal, technical, hostile, and adversarial messages.
-6. Keep the Stardew menu open in a waiting state so single-player remains paused until the reply is shown.
-
-The current implementation should be treated as the baseline, not replaced wholesale.
+The next useful pass is richer long-term memory: gradual grudge recovery, character-specific sensitivity values, and a small in-game indication of the friendship change. The current implementation should remain the working baseline.

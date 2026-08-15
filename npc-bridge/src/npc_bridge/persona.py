@@ -10,11 +10,14 @@ from .profiles import NpcProfile
 
 OUTPUT_SCHEMA: dict[str, Any] = {
     "type": "object", "additionalProperties": False,
-    "required": ["dialogue", "emotion", "confidence"],
+    "required": ["dialogue", "emotion", "confidence", "facialExpression", "bodyLanguage", "interactionTone"],
     "properties": {
         "dialogue": {"type": "string", "minLength": 1, "maxLength": 2000},
         "emotion": {"type": "string", "enum": ["neutral", "happy", "sad", "angry", "afraid", "surprised", "curious", "amused"]},
-        "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "facialExpression": {"type": "string", "minLength": 1, "maxLength": 120},
+        "bodyLanguage": {"type": "string", "minLength": 1, "maxLength": 180},
+        "interactionTone": {"type": "string", "enum": ["neutral", "friendly", "compliment", "flirty", "uncomfortable", "rude", "hostile"]}
     }
 }
 
@@ -73,6 +76,10 @@ IMMERSION CONTRACT
 - Prefer one or two natural spoken sentences. Avoid padded acknowledgements such as "I see", "I understand", or "perhaps we could" unless they are a genuine character habit.
 - Return only the required JSON object. Do not include reasoning, markdown, labels, or extra text.
 - Use plain dialogue text without emoji or decorative symbols.
+- Describe one short visible facial expression and one short body-language action. Do not include either inside the spoken dialogue.
+- Classify the player's interaction tone honestly. A direct insult is rude or hostile, not friendly.
+- Relationship memory is authoritative. Let wariness, suspected flattery, and grudges affect the reaction in a character-specific way.
+- Repeated compliments should lose their effect and eventually feel insincere. Do not forgive remembered hostility merely because the newest message is pleasant.
 
 PERSONA
 Traits: {traits}
@@ -141,6 +148,9 @@ Keep dialogue under {profile.maximumCharacters} characters."""
             data["emotion"] = "neutral"
         if isinstance(data, dict) and not isinstance(data.get("confidence", 0.7), (int, float)):
             data["confidence"] = 0.7
+        allowed_tones = {"neutral", "friendly", "compliment", "flirty", "uncomfortable", "rude", "hostile"}
+        if isinstance(data, dict) and data.get("interactionTone") not in allowed_tones:
+            data["interactionTone"] = "neutral"
         return ModelDialogue.model_validate(data)
 
     @staticmethod

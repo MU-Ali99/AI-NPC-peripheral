@@ -58,8 +58,23 @@ internal sealed record ConversationResponse(
     [property: JsonPropertyName("dialogue")] string Dialogue,
     [property: JsonPropertyName("emotion")] string? Emotion,
     [property: JsonPropertyName("confidence")] double? Confidence,
+    [property: JsonPropertyName("facialExpression")] string? FacialExpression,
+    [property: JsonPropertyName("bodyLanguage")] string? BodyLanguage,
+    [property: JsonPropertyName("relationshipDelta")] int RelationshipDelta,
+    [property: JsonPropertyName("relationshipReason")] string? RelationshipReason,
+    [property: JsonPropertyName("memoryState")] string? MemoryState,
     [property: JsonPropertyName("errorCode")] string? ErrorCode,
     [property: JsonPropertyName("error")] string? Error
 );
 
-internal sealed record PendingDialogue(string NpcId, string? Dialogue, string? Emotion, string? Error);
+internal sealed record PendingDialogue(
+    string NpcId,
+    string? Dialogue,
+    string? Emotion,
+    string? FacialExpression,
+    string? BodyLanguage,
+    int RelationshipDelta,
+    string? RelationshipReason,
+    string? MemoryState,
+    string? Error
+);

@@ -7,6 +7,7 @@ from . import __version__
 from .backends import LlmBackend, LlmBackendError, OllamaBackend
 from .config import Settings
 from .models import ConversationRequestV1, ConversationRequestV2, ConversationResponseV1, ConversationResponseV2, ExtendedContext, GameIdentity, NpcIdentity, PlayerIdentity, RelationshipContext, WorldContextV2
+from .memory import MemoryStore, RelationshipEngine
 from .persona import PersonaEngine
 from .profiles import InvalidProfileError, ProfileNotFoundError, ProfileStore
 
@@ -27,6 +28,7 @@ def create_app(settings: Settings | None = None, backend: LlmBackend | None = No
     backend = backend or OllamaBackend(settings.ollama_endpoint, settings.ollama_model, settings.ollama_timeout_seconds)
     profiles = ProfileStore(settings.profiles_path)
     persona = PersonaEngine(backend, settings.maximum_characters)
+    memory = MemoryStore(settings.memory_path)
     api = FastAPI(title="NPCBridge", version=__version__)
 
     @api.get("/health")
@@ -38,9 +40,25 @@ def create_app(settings: Settings | None = None, backend: LlmBackend | None = No
         logger.info("Request received game=%s npc=%s profile=%s", request.game.id, request.npc.id, request.npc.profileId)
         try:
             profile = profiles.load(request.npc.profileId)
+            before = memory.summary(request.game.id, request.player.id, request.npc.id)
+            request.context.custom["relationshipMemory"] = {
+                "state": before.state,
+                "recentInteractionTypes": list(before.recent_categories),
+                "complimentStreak": before.compliment_streak,
+                "offenseScore": before.offense_score,
+            }
             result = await persona.respond(request, profile)
+            category = RelationshipEngine.classify(request.player.message, result.interactionTone)
+            delta, reason = RelationshipEngine.impact(category, before)
+            memory.record(request.game.id, request.player.id, request.npc.id, category, delta, request.player.message)
+            after = memory.summary(request.game.id, request.player.id, request.npc.id)
             logger.info("Request completed npc=%s elapsed_ms=%d", request.npc.id, (time.perf_counter() - started) * 1000)
-            return ConversationResponseV2(success=True, npc=request.npc.displayName, dialogue=result.dialogue, emotion=result.emotion, confidence=result.confidence)
+            return ConversationResponseV2(
+                success=True, npc=request.npc.displayName, dialogue=result.dialogue,
+                emotion=result.emotion, confidence=result.confidence,
+                facialExpression=result.facialExpression, bodyLanguage=result.bodyLanguage,
+                relationshipDelta=delta, relationshipReason=reason, memoryState=after.state,
+            )
         except ProfileNotFoundError as exc:
             return ConversationResponseV2(success=False, npc=request.npc.displayName, errorCode="profile_not_found", error=str(exc))
         except InvalidProfileError as exc:

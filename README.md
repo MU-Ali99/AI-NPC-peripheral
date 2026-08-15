@@ -24,6 +24,10 @@ The current build is text-only. Walk near a supported character, press `Alt+0`, 
 - Structured dialogue output with emotion metadata and safe fallback handling
 - Persona regression checks for normal, technical, hostile, and adversarial messages
 - Character-specific speech cadence, vocabulary, habits, and reaction patterns
+- Persistent relationship memory for compliments, insults, hostility, and grudges
+- Diminishing returns when praise becomes repetitive or feels fake
+- Visible facial expressions and body language in the dialogue box
+- Conversation outcomes applied to Stardew friendship points
 - Paused single-player input and waiting screens
 
 ## Project layout
@@ -132,6 +136,7 @@ Bridge defaults live in `config/default.json`. They can be overridden with these
 - `NPCBRIDGE_MODEL`
 - `NPCBRIDGE_CONFIG`
 - `NPCBRIDGE_PROFILES`
+- `NPCBRIDGE_MEMORY`
 
 The mod writes its local settings to `C:\Games\Stardew Valley\Mods\StardewAI\config.json`. That file controls the hotkey, bridge address, timeout, and interaction distance.
 
@@ -150,9 +155,9 @@ NPCBridge binds to `127.0.0.1` by default. A future game adapter can point to a 
 
 - Text conversation only
 - Two character profiles
-- No conversation memory
+- Memory currently tracks interaction tone and relationship impact, not complete dialogue transcripts
 - No voice input or speech output
 - No generated quests or character movement
 - No API authentication while running on localhost
 
-The first working snapshot is tagged `v0.1.0`. Version `v0.1.1` changed the conversation key from `Alt+1` to `Alt+0`. Version `v0.2.0` added the generic protocol and paused waiting flow. Version `v0.2.1` adds character-specific speech and reaction patterns.
+The first working snapshot is tagged `v0.1.0`. Version `v0.1.1` changed the conversation key from `Alt+1` to `Alt+0`. Version `v0.2.0` added the generic protocol and paused waiting flow. Version `v0.2.1` added character-specific speech and reaction patterns. Version `v0.3.0` adds persistent relationship consequences and visible reactions.

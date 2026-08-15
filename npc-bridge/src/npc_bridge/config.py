@@ -22,6 +22,7 @@ class Settings:
     ollama_timeout_seconds: float = 75
     maximum_characters: int = 400
     profiles_path: Path = project_root() / "npc-profiles"
+    memory_path: Path = project_root() / "data" / "npcbridge.db"
 
     @classmethod
     def load(cls) -> "Settings":
@@ -35,4 +36,5 @@ class Settings:
             ollama_timeout_seconds=float(data["ollama"]["timeoutSeconds"]),
             maximum_characters=int(data["dialogue"]["maximumCharacters"]),
             profiles_path=Path(os.getenv("NPCBRIDGE_PROFILES", project_root() / "npc-profiles")),
+            memory_path=Path(os.getenv("NPCBRIDGE_MEMORY", project_root() / "data" / "npcbridge.db")),
         )
