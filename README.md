@@ -6,21 +6,21 @@ Local-first prototype connecting Stardew Valley to a standalone AI dialogue serv
 Stardew Valley -> SMAPI mod -> NPCBridge -> replaceable LLM backend (initially Ollama)
 ```
 
-The first milestone is a text-only conversation with Abigail using a configurable `Alt+1` hotkey. Voice, autonomous movement, generated quests, and complex memory are intentionally out of scope.
+The first milestone is a text-only conversation using a configurable `Alt+0` hotkey. Voice, autonomous movement, generated quests, and complex memory are intentionally out of scope.
 
 ## Current prototype
 
 The complete MVP is implemented and installed locally:
 
 - Stardew Valley `1.6.0` with pinned SMAPI `4.0.6`.
-- Stardew AI SMAPI mod with configurable `Alt+1` activation.
+- Stardew AI SMAPI mod with configurable `Alt+0` activation.
 - In-game text entry, nearest-NPC targeting, world/relationship context, and non-blocking HTTP.
 - NPCBridge FastAPI service with a versioned protocol and replaceable LLM backend.
 - Ollama `0.32.9` with `qwen2.5:1.5b` (approximately 986 MB model payload).
 - External original Abigail and Linus profiles.
 - Standalone Windows `NPCBridge.exe` package.
 
-Automated API, model, build, packaging, and SMAPI load checks pass. The remaining acceptance check is using `Alt+1` beside Abigail in a loaded save.
+Automated API, model, build, packaging, and SMAPI load checks pass. The remaining acceptance check is using `Alt+0` beside Abigail or Linus in a loaded save.
 
 ## Layout
 
@@ -49,7 +49,7 @@ Setup and usage instructions will be expanded as each component becomes operatio
    C:\Games\Stardew Valley\StardewModdingAPI.exe
    ```
 
-3. Load a save, stand within four tiles of Abigail, and press `Alt+1`.
+3. Load a save, stand within four tiles of Abigail or Linus, and press `Alt+0` on the keyboard's top number row.
 4. Type a message and press Enter. Press Escape to cancel.
 
 The service must remain running while playing. Ollama normally starts with Windows; `start-system.ps1` also attempts to start it if needed.

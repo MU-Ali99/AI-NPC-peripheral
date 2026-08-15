@@ -49,7 +49,7 @@ Last updated: 2026-08-13
 4. Build NPCBridge — **complete**.
 5. Test NPCBridge over HTTP — **complete**; five automated tests plus live Ollama calls pass.
 6. Create and load basic SMAPI mod — **complete**; confirmed in SMAPI log.
-7. Implement Alt+1 NPC detection — **complete**.
+7. Implement Alt+0 NPC detection — **complete**.
 8. Implement in-game text input — **complete**.
 9. Connect SMAPI to NPCBridge — **complete**.
 10. Connect NPCBridge to Ollama — **complete**.
@@ -60,7 +60,7 @@ Last updated: 2026-08-13
 ## Next actions
 
 1. Run `scripts\start-system.ps1`.
-2. Launch SMAPI, load a save, stand beside Abigail, and complete the documented Alt+1 acceptance test.
+2. Launch SMAPI, load a save, stand beside Abigail or Linus, and complete the documented Alt+0 acceptance test.
 
 ## Verification record
 
@@ -68,6 +68,6 @@ Last updated: 2026-08-13
 - Live source bridge health and conversation calls: passed.
 - Live packaged EXE health and conversation calls: passed.
 - C# Release build: passed with zero errors. A Newtonsoft version-resolution warning originates from the pinned legacy build package/game assembly combination and the mod does not directly use Newtonsoft.
-- SMAPI startup: passed on 2026-08-13. It reported Stardew Valley 1.6.0 build 24079, SMAPI 4.0.6, loaded Stardew AI 0.1.0, registered `LeftAlt + D1`, found no software conflicts, and reached the title screen.
+- Initial SMAPI startup verification passed on 2026-08-13 with Stardew AI 0.1.0 and `LeftAlt + D1`. Version 0.1.1 changes the configured input to `LeftAlt + D0` (`Alt+0`).
 - Full in-save UI interaction cannot be automated safely and remains the only acceptance test.
 - Linus was added as the second original external profile to make the first interaction test easier near his mountain tent.
