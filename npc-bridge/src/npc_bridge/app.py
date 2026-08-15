@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import logging
+import sqlite3
 import time
 from fastapi import FastAPI
 from . import __version__
 from .backends import LlmBackend, LlmBackendError, OllamaBackend
 from .config import Settings
 from .models import ConversationRequestV1, ConversationRequestV2, ConversationResponseV1, ConversationResponseV2, ExtendedContext, GameIdentity, NpcIdentity, PlayerIdentity, RelationshipContext, WorldContextV2
-from .memory import MemoryStore, RelationshipEngine
+from .memory import MemoryStore
 from .persona import PersonaEngine
 from .profiles import InvalidProfileError, ProfileNotFoundError, ProfileStore
 
@@ -28,7 +29,7 @@ def create_app(settings: Settings | None = None, backend: LlmBackend | None = No
     backend = backend or OllamaBackend(settings.ollama_endpoint, settings.ollama_model, settings.ollama_timeout_seconds)
     profiles = ProfileStore(settings.profiles_path)
     persona = PersonaEngine(backend, settings.maximum_characters)
-    memory = MemoryStore(settings.memory_path)
+    memory = MemoryStore(settings.memory_path, settings.initial_relationship_score)
     api = FastAPI(title="NPCBridge", version=__version__)
 
     @api.get("/health")
@@ -40,34 +41,33 @@ def create_app(settings: Settings | None = None, backend: LlmBackend | None = No
         logger.info("Request received game=%s npc=%s profile=%s", request.game.id, request.npc.id, request.npc.profileId)
         try:
             profile = profiles.load(request.npc.profileId)
-            before = memory.summary(request.game.id, request.player.id, request.npc.id)
-            request.context.custom["relationshipMemory"] = {
-                "state": before.state,
-                "recentInteractionTypes": list(before.recent_categories),
-                "complimentStreak": before.compliment_streak,
-                "offenseScore": before.offense_score,
-            }
-            result = await persona.respond(request, profile)
-            category = RelationshipEngine.classify(request.player.message, result.interactionTone)
-            delta, reason = RelationshipEngine.impact(category, before)
-            expression = result.facialExpression
-            if expression.strip().lower() in {"neutral", "normal", "none"}:
-                expression = {
-                    "compliment": "a small, cautious smile",
-                    "friendly": "a warm, attentive look",
-                    "flirty": "a slightly uncertain smile",
-                    "uncomfortable": "an uneasy, guarded look",
-                    "rude": "a firm, offended frown",
-                    "hostile": "an angry, distrustful glare",
-                }.get(category, "a calm, observant expression")
-            memory.record(request.game.id, request.player.id, request.npc.id, category, delta, request.player.message)
-            after = memory.summary(request.game.id, request.player.id, request.npc.id)
+            before = memory.snapshot(request.game.id, request.player.id, request.npc.id)
+            try:
+                interaction_id = memory.begin(request.interactionId, request.game.id, request.player.id, request.npc.id, request.player.message, before)
+            except sqlite3.IntegrityError:
+                return ConversationResponseV2(success=False,npc=request.npc.displayName,
+                    interactionId=request.interactionId,errorCode="duplicate_interaction",
+                    error="This interaction ID has already been used.")
+            try:
+                result = await persona.respond(request, profile, before, memory.history(
+                    request.game.id, request.player.id, request.npc.id, settings.recent_history_limit))
+            except Exception:
+                memory.mark(interaction_id, "FAILED", "model_failure")
+                raise
+            after = memory.finish(interaction_id, result.dialogue, result.sentiment,
+                                  result.facialExpression, settings.sentiment_deltas)
+            if after is None:
+                return ConversationResponseV2(success=False,npc=request.npc.displayName,
+                    interactionId=interaction_id,errorCode="interaction_not_committed",
+                    error="The interaction was cancelled, duplicated, or superseded.")
+            delta=after.score-before.score
             logger.info("Request completed npc=%s elapsed_ms=%d", request.npc.id, (time.perf_counter() - started) * 1000)
             return ConversationResponseV2(
                 success=True, npc=request.npc.displayName, dialogue=result.dialogue,
-                emotion=result.emotion, confidence=result.confidence,
-                facialExpression=expression,
-                relationshipDelta=delta, relationshipReason=reason, memoryState=after.state,
+                facialExpression=result.facialExpression, sentiment=result.sentiment,
+                interactionId=interaction_id, relationshipDelta=delta,
+                relationshipReason=f"Model judged the message {result.sentiment.lower()}.",
+                memoryState=after.state, relationshipScore=after.score, relationshipState=after.state,
             )
         except ProfileNotFoundError as exc:
             return ConversationResponseV2(success=False, npc=request.npc.displayName, errorCode="profile_not_found", error=str(exc))
@@ -80,6 +80,10 @@ def create_app(settings: Settings | None = None, backend: LlmBackend | None = No
     @api.post("/v2/conversation", response_model=ConversationResponseV2)
     async def conversation_v2(request: ConversationRequestV2) -> ConversationResponseV2:
         return await run(request)
+
+    @api.delete("/v2/interactions/{interaction_id}")
+    async def cancel_interaction(interaction_id: str) -> dict:
+        return {"interactionId": interaction_id, "cancelled": memory.mark(interaction_id, "CANCELLED")}
 
     @api.post("/v1/conversation", response_model=ConversationResponseV1)
     @api.post("/conversation", response_model=ConversationResponseV1, include_in_schema=False)

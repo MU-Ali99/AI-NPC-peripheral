@@ -9,7 +9,8 @@ internal sealed record ConversationRequest(
     [property: JsonPropertyName("player")] PlayerIdentity Player,
     [property: JsonPropertyName("relationship")] RelationshipContext? Relationship,
     [property: JsonPropertyName("world")] WorldContext? World,
-    [property: JsonPropertyName("context")] ExtendedContext Context
+    [property: JsonPropertyName("context")] ExtendedContext Context,
+    [property: JsonPropertyName("interactionId")] string InteractionId
 );
 
 internal sealed record GameIdentity(
@@ -62,6 +63,10 @@ internal sealed record ConversationResponse(
     [property: JsonPropertyName("relationshipDelta")] int RelationshipDelta,
     [property: JsonPropertyName("relationshipReason")] string? RelationshipReason,
     [property: JsonPropertyName("memoryState")] string? MemoryState,
+    [property: JsonPropertyName("interactionId")] string? InteractionId,
+    [property: JsonPropertyName("sentiment")] string? Sentiment,
+    [property: JsonPropertyName("relationshipScore")] int? RelationshipScore,
+    [property: JsonPropertyName("relationshipState")] string? RelationshipState,
     [property: JsonPropertyName("errorCode")] string? ErrorCode,
     [property: JsonPropertyName("error")] string? Error
 );

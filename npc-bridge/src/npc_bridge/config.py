@@ -18,11 +18,20 @@ class Settings:
     bridge_host: str = "127.0.0.1"
     bridge_port: int = 8765
     ollama_endpoint: str = "http://127.0.0.1:11434"
-    ollama_model: str = "qwen2.5:1.5b"
+    ollama_model: str = "gemma3:4b"
     ollama_timeout_seconds: float = 75
     maximum_characters: int = 400
     profiles_path: Path = project_root() / "npc-profiles"
     memory_path: Path = project_root() / "data" / "npcbridge.db"
+    initial_relationship_score: int = 500
+    positive_delta: int = 10
+    neutral_delta: int = 0
+    negative_delta: int = -10
+    recent_history_limit: int = 6
+
+    @property
+    def sentiment_deltas(self) -> dict[str, int]:
+        return {"POSITIVE": self.positive_delta, "NEUTRAL": self.neutral_delta, "NEGATIVE": self.negative_delta}
 
     @classmethod
     def load(cls) -> "Settings":
@@ -37,4 +46,9 @@ class Settings:
             maximum_characters=int(data["dialogue"]["maximumCharacters"]),
             profiles_path=Path(os.getenv("NPCBRIDGE_PROFILES", project_root() / "npc-profiles")),
             memory_path=Path(os.getenv("NPCBRIDGE_MEMORY", project_root() / "data" / "npcbridge.db")),
+            initial_relationship_score=int(data.get("relationship", {}).get("initialScore", 500)),
+            positive_delta=int(data.get("relationship", {}).get("positiveDelta", 10)),
+            neutral_delta=int(data.get("relationship", {}).get("neutralDelta", 0)),
+            negative_delta=int(data.get("relationship", {}).get("negativeDelta", -10)),
+            recent_history_limit=int(data.get("memory", {}).get("recentHistoryLimit", 6)),
         )

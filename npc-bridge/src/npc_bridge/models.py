@@ -77,6 +77,7 @@ class ConversationRequestV2(StrictModel):
     relationship: RelationshipContext | None = None
     world: WorldContextV2 | None = None
     context: ExtendedContext = Field(default_factory=ExtendedContext)
+    interactionId: str | None = Field(default=None, min_length=8, max_length=80)
 
 class ConversationResponseV2(StrictModel):
     protocolVersion: Literal["2.0"] = "2.0"
@@ -89,13 +90,15 @@ class ConversationResponseV2(StrictModel):
     relationshipDelta: int = Field(default=0, ge=-100, le=100)
     relationshipReason: str | None = None
     memoryState: str | None = None
+    interactionId: str | None = None
+    sentiment: Literal["POSITIVE", "NEUTRAL", "NEGATIVE"] | None = None
+    relationshipScore: int | None = Field(default=None, ge=0, le=1000)
+    relationshipState: str | None = None
     errorCode: str | None = None
     error: str | None = None
 
 class ModelDialogue(BaseModel):
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="forbid")
     dialogue: str = Field(min_length=1, max_length=2000)
-    emotion: Literal["neutral", "happy", "sad", "angry", "afraid", "surprised", "curious", "amused"] = "neutral"
-    confidence: float = Field(default=0.7, ge=0, le=1)
     facialExpression: str = Field(default="neutral", min_length=1, max_length=120)
-    interactionTone: Literal["neutral", "friendly", "compliment", "flirty", "uncomfortable", "rude", "hostile"] = "neutral"
+    sentiment: Literal["POSITIVE", "NEUTRAL", "NEGATIVE"]

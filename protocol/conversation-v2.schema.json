@@ -7,6 +7,7 @@
   "required": ["protocolVersion", "game", "npc", "player"],
   "properties": {
     "protocolVersion": { "const": "2.0" },
+    "interactionId": { "type": ["string", "null"], "minLength": 8, "maxLength": 80 },
     "game": {
       "type": "object", "additionalProperties": false, "required": ["id"],
       "properties": { "id": { "type": "string" }, "name": { "type": ["string", "null"] } }

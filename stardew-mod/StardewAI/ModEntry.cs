@@ -16,6 +16,7 @@ internal sealed class ModEntry : Mod
     private ModConfig config = null!;
     private bool requestInProgress;
     private CancellationTokenSource? requestCancellation;
+    private string? activeInteractionId;
 
     public override void Entry(IModHelper helper)
     {
@@ -77,6 +78,7 @@ internal sealed class ModEntry : Mod
                 ["displayName"] = character.displayName
             })
             .ToList();
+        this.activeInteractionId = Guid.NewGuid().ToString();
         var request = new ConversationRequest(
             "2.0",
             new GameIdentity("stardew_valley", "Stardew Valley"),
@@ -88,7 +90,8 @@ internal sealed class ModEntry : Mod
             {
                 ["adapter"] = "AINPCPeripheral.StardewAI",
                 ["singlePlayer"] = !Context.IsMultiplayer
-            })
+            }),
+            this.activeInteractionId
         );
 
         this.requestInProgress = true;
@@ -101,7 +104,10 @@ internal sealed class ModEntry : Mod
 
     private void CancelConversation()
     {
+        string? interactionId = this.activeInteractionId;
         this.CancelPendingRequest(true);
+        if (interactionId is not null)
+            _ = this.NotifyCancellationAsync(interactionId);
         Game1.exitActiveMenu();
         Game1.addHUDMessage(new HUDMessage("Conversation cancelled.", HUDMessage.newQuest_type));
     }
@@ -112,8 +118,23 @@ internal sealed class ModEntry : Mod
         this.requestCancellation?.Dispose();
         this.requestCancellation = null;
         this.requestInProgress = false;
+        this.activeInteractionId = null;
         if (clearReplies)
             while (this.pendingDialogues.TryDequeue(out _)) { }
+    }
+
+    private async Task NotifyCancellationAsync(string interactionId)
+    {
+        try
+        {
+            Uri conversationUri = new(this.config.BridgeUrl);
+            Uri cancelUri = new(conversationUri, $"/v2/interactions/{Uri.EscapeDataString(interactionId)}");
+            using HttpResponseMessage _ = await this.httpClient.DeleteAsync(cancelUri).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            this.Monitor.Log($"Could not notify NPCBridge of cancellation: {ex.Message}", LogLevel.Trace);
+        }
     }
 
     private async Task SendConversationAsync(ConversationRequest request, CancellationToken cancellationToken)
@@ -157,6 +178,7 @@ internal sealed class ModEntry : Mod
             this.requestInProgress = false;
             this.requestCancellation?.Dispose();
             this.requestCancellation = null;
+            this.activeInteractionId = null;
             if (result.Error is not null)
             {
                 Game1.exitActiveMenu();

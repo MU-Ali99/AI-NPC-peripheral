@@ -17,15 +17,16 @@ The current build is text-only. Walk near a supported character, press `Alt+0`, 
 - Non-blocking HTTP requests while the model generates a reply
 - Player, relationship, location, date, time, and weather context
 - Abigail and Linus character profiles
-- Local inference through Ollama and `qwen2.5:3b`
+- Local inference through Ollama and `gemma3:4b`
 - Python source mode and a packaged `NPCBridge.exe`
 - Request validation, timeouts, readable errors, and automated tests
 - Generic protocol v2 with protocol v1 compatibility
 - Structured dialogue output with emotion metadata and safe fallback handling
 - Persona regression checks for normal, technical, hostile, and adversarial messages
 - Character-specific speech cadence, vocabulary, habits, and reaction patterns
-- Persistent relationship memory for compliments, insults, hostility, and grudges
-- Diminishing returns when praise becomes repetitive or feels fake
+- Persistent 0–1000 per-player relationship scores and complete recent dialogue history
+- Model-owned POSITIVE/NEUTRAL/NEGATIVE judgments with deterministic score changes
+- Transaction-safe pending, completed, cancelled, failed, and superseded interactions
 - Visible facial expressions in the dialogue box
 - Conversation outcomes applied to Stardew friendship points
 - Paused single-player input and waiting screens
@@ -53,7 +54,7 @@ The prototype was built and tested with:
 - .NET SDK 10, targeting .NET 6 for the mod
 - Python 3.12
 - Ollama 0.32.9
-- `qwen2.5:3b`
+- `gemma3:4b`
 
 SMAPI is pinned to 4.0.6 because newer releases require a newer Stardew Valley version.
 
@@ -155,9 +156,9 @@ NPCBridge binds to `127.0.0.1` by default. A future game adapter can point to a 
 
 - Text conversation only
 - Two character profiles
-- Memory currently tracks interaction tone and relationship impact, not complete dialogue transcripts
+- Relationship behavior is intentionally limited to three sentiment outcomes in this milestone
 - No voice input or speech output
 - No generated quests or character movement
 - No API authentication while running on localhost
 
-The first working snapshot is tagged `v0.1.0`. Version `v0.1.1` changed the conversation key from `Alt+1` to `Alt+0`. Version `v0.2.0` added the generic protocol and paused waiting flow. Version `v0.2.1` added character-specific speech and reaction patterns. Version `v0.3.0` added persistent relationship consequences. Version `v0.3.1` focused visible reactions on facial expressions and allowed longer replies. Version `v0.3.2` rejected self-pitying insult responses. Version `v0.3.3` added input isolation and request cancellation. Version `v0.3.4` restored reliable Enter and Escape handling. NPCBridge `v0.3.5` rejected counseling replies to insults. Version `v0.3.6` distinguishes threats, profanity, age insults, and grudges.
+The first working snapshot is tagged `v0.1.0`. Version `v0.4.0` moves language judgment into the model and makes NPCBridge the transactional owner of scores and conversation history. Earlier release details are kept in `docs/releases`.

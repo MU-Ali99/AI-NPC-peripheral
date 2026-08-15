@@ -6,10 +6,19 @@
   },
   "ollama": {
     "endpoint": "http://127.0.0.1:11434",
-    "model": "qwen2.5:3b",
+    "model": "gemma3:4b",
     "timeoutSeconds": 75
   },
   "dialogue": {
     "maximumCharacters": 800
+  },
+  "relationship": {
+    "initialScore": 500,
+    "positiveDelta": 10,
+    "neutralDelta": 0,
+    "negativeDelta": -10
+  },
+  "memory": {
+    "recentHistoryLimit": 6
   }
 }

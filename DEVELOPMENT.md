@@ -26,7 +26,7 @@ The game adapter and dialogue service are separate on purpose. The mod gathers g
 - .NET SDK: `10.0.203`
 - Python: `3.12.10`
 - Ollama: `0.32.9`
-- Model: `qwen2.5:3b` (selected after persona regression testing on this 8 GB system)
+- Model: `gemma3:4b` (selected for substantially better character acting on this 8 GB system)
 
 SMAPI 4.0.6 is intentionally pinned because the game is staying on 1.6.0. The official SMAPI installer payload was downloaded from its GitHub release. Its SHA-256 was:
 
@@ -46,19 +46,20 @@ The game executable and original assets were not replaced. The repository ignore
 - Results are queued back to the game thread before touching Stardew UI state.
 - Normal Stardew conversations are left alone; generated dialogue uses a separate key.
 - The bridge binds to localhost unless configured otherwise.
-- Relationship judgments use bounded deterministic rules after the model classifies the interaction. This keeps friendship changes predictable.
-- Compact interaction memory is stored in SQLite and scoped by game, player, and NPC.
+- The model judges the current message as POSITIVE, NEUTRAL, or NEGATIVE. NPCBridge only maps that result to configured numeric changes.
+- SQLite is authoritative for full interaction records and per-game/player/NPC relationship state.
+- Interaction IDs and optimistic versions prevent cancelled, duplicate, or stale replies from changing state.
 
 ## What has been verified
 
-- Twenty-three Python tests pass.
+- Twenty-one Python tests pass.
 - Source-mode bridge health and conversation requests pass.
 - Packaged `NPCBridge.exe` health and conversation requests pass.
 - Live requests through Ollama return dialogue for Abigail and Linus.
 - The Stardew mod builds in Release mode with no compile errors.
 - SMAPI 4.0.6 launches Stardew 1.6.0 and loads Stardew AI successfully.
 - The mod configuration now uses `LeftAlt + D0`, shown to players as `Alt+0`.
-- Packaged NPCBridge reports protocols 1.0 and 2.0 and completes real v2 requests through `qwen2.5:3b`.
+- Protocols 1.0 and 2.0 remain supported; v2 now includes interaction IDs, sentiment, score, and relationship state.
 - Stardew AI uses the v2 endpoint at `http://127.0.0.1:8765/v2/conversation`.
 
 The mod build reports a Newtonsoft version-resolution warning caused by the older SMAPI/game assembly combination. The mod does not use Newtonsoft directly, and the resulting assembly loads successfully.
@@ -133,8 +134,12 @@ Expanded the insult-response quality gate after the local model answered “hand
 
 Added deterministic threat detection and context-aware fallback reactions. Threats, profanity, age insults, ordinary insults, and remembered grudges now produce different responses instead of sharing one fixed line.
 
+### v0.4.0
+
+Removed the bridge's phrase dictionaries and scripted NPC replies. The model now owns interpretation and acting, while NPCBridge owns profiles, recent completed dialogue, persistent 0–1000 scores, configurable sentiment deltas, migrations, and transaction safety. Gemma 3 4B replaced Qwen 2.5 3B after a fixed local comparison showed much stronger in-character replies, at the cost of slower CPU inference.
+
 Detailed notes for the first snapshot are in `docs/releases/v0.1.0.md`.
 
 ## Next work
 
-The next useful pass is richer long-term memory: gradual grudge recovery, character-specific sensitivity values, and a small in-game indication of the friendship change. The current implementation should remain the working baseline.
+The next useful pass is a player-controlled in-game evaluation of varied messages, followed by richer relationship events only if the simple sentiment model proves insufficient.
