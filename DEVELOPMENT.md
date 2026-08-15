@@ -113,6 +113,10 @@ Added persistent per-player relationship memory. Compliments now have diminishin
 
 Removed body-language narration from the dialogue box, made facial expressions specific instead of showing neutral defaults, strengthened character reactions to direct insults, and raised the reply limit so detailed answers are possible when appropriate.
 
+### v0.3.2
+
+Added a stricter quality gate for insult responses. Linus no longer accepts self-pitying or wounded dialogue that conflicts with his calm, self-reliant profile.
+
 Detailed notes for the first snapshot are in `docs/releases/v0.1.0.md`.
 
 ## Next work

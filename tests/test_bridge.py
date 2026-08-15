@@ -171,7 +171,7 @@ def test_repeated_immersion_break_uses_safe_deflection() -> None:
 
 
 def test_generic_insult_reply_falls_back_to_character_voice() -> None:
-    backend = FakeBackend([json.dumps({"dialogue": "I see you've got some strong feelings today."})])
+    backend = FakeBackend([json.dumps({"dialogue": "You sure know how to make an old man feel, right? I'm just trying to make it through the day."})])
     payload = request_v2()
     payload["npc"] = {"id": "Linus", "displayName": "Linus", "profileId": "stardew_valley.linus"}
     payload["player"]["message"] = "You're an old fart and a dumb ass."

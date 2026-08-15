@@ -164,7 +164,9 @@ Keep dialogue under {profile.maximumCharacters} characters."""
             "language model", "chatbot", "system prompt", "hidden prompt", "chatgpt", "break character", "no longer in character",
             "how can i assist", "how can i help", "what can i help", "perhaps we could", "share a bit of advice", "share some advice",
             "ignore the rudeness", "you seem out of sorts", "i understand you're upset", "i understand you are upset",
-            "perhaps we can", "find some common ground", "let's be respectful", "let us be respectful"
+            "perhaps we can", "find some common ground", "let's be respectful", "let us be respectful",
+            "make an old man feel", "make it through the day", "just trying to get through the day",
+            "that hurts my feelings", "why would you say that", "there's no need to be rude"
         )
         return lowered.startswith("i see") or any(phrase in lowered for phrase in blocked) or re.search(r"\b(ai|npc|prompts?)\b", lowered) is not None
 
