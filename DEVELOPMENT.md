@@ -26,7 +26,7 @@ The game adapter and dialogue service are separate on purpose. The mod gathers g
 - .NET SDK: `10.0.203`
 - Python: `3.12.10`
 - Ollama: `0.32.9`
-- Model: `qwen2.5:1.5b`
+- Model: `qwen2.5:3b` (selected after persona regression testing on this 8 GB system)
 
 SMAPI 4.0.6 is intentionally pinned because the game is staying on 1.6.0. The official SMAPI installer payload was downloaded from its GitHub release. Its SHA-256 was:
 
@@ -49,13 +49,15 @@ The game executable and original assets were not replaced. The repository ignore
 
 ## What has been verified
 
-- Six Python tests pass.
+- Fourteen Python tests pass.
 - Source-mode bridge health and conversation requests pass.
 - Packaged `NPCBridge.exe` health and conversation requests pass.
 - Live requests through Ollama return dialogue for Abigail and Linus.
 - The Stardew mod builds in Release mode with no compile errors.
 - SMAPI 4.0.6 launches Stardew 1.6.0 and loads Stardew AI successfully.
 - The mod configuration now uses `LeftAlt + D0`, shown to players as `Alt+0`.
+- Packaged NPCBridge 0.2.0 reports protocols 1.0 and 2.0 and completes a real v2 request through `qwen2.5:3b`.
+- Stardew AI 0.2.0 loads with the v2 endpoint at `http://127.0.0.1:8765/v2/conversation`.
 
 The mod build reports a Newtonsoft version-resolution warning caused by the older SMAPI/game assembly combination. The mod does not use Newtonsoft directly, and the resulting assembly loads successfully.
 
@@ -75,6 +77,9 @@ The mod build reports a Newtonsoft version-resolution warning caused by the olde
 - [x] Return generated dialogue to Stardew
 - [x] Package NPCBridge as a Windows executable
 - [x] Verify the mod loads through SMAPI
+- [x] Add a game-neutral v2 adapter contract while retaining v1
+- [x] Add structured output validation and persona regression tooling
+- [x] Keep single-player paused during text input and model generation
 - [ ] Complete and record a full player-controlled conversation in a loaded save
 
 ## Releases
@@ -86,6 +91,10 @@ First working local prototype. It includes the bridge, Ollama backend, Stardew a
 ### v0.1.1
 
 Changed the in-game conversation key to `Alt+0` and updated the installed mod configuration.
+
+### v0.2.0
+
+Introduced the game-agnostic v2 envelope, explicit profile IDs, optional context fields, a dedicated PersonaEngine, structured-output validation with a compatible JSON fallback, injection checks, persona regression tooling, and a paused Stardew waiting menu. Protocol v1 remains available for older adapters.
 
 Detailed notes for the first snapshot are in `docs/releases/v0.1.0.md`.
 

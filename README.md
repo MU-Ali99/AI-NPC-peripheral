@@ -17,9 +17,13 @@ The current build is text-only. Walk near a supported character, press `Alt+0`, 
 - Non-blocking HTTP requests while the model generates a reply
 - Player, relationship, location, date, time, and weather context
 - Abigail and Linus character profiles
-- Local inference through Ollama and `qwen2.5:1.5b`
+- Local inference through Ollama and `qwen2.5:3b`
 - Python source mode and a packaged `NPCBridge.exe`
 - Request validation, timeouts, readable errors, and automated tests
+- Generic protocol v2 with protocol v1 compatibility
+- Structured dialogue output with emotion metadata and safe fallback handling
+- Persona regression checks for normal, technical, hostile, and adversarial messages
+- Paused single-player input and waiting screens
 
 ## Project layout
 
@@ -44,7 +48,7 @@ The prototype was built and tested with:
 - .NET SDK 10, targeting .NET 6 for the mod
 - Python 3.12
 - Ollama 0.32.9
-- `qwen2.5:1.5b`
+- `qwen2.5:3b`
 
 SMAPI is pinned to 4.0.6 because newer releases require a newer Stardew Valley version.
 
@@ -91,6 +95,14 @@ Run the test suite:
 ```powershell
 .\.venv\Scripts\python.exe -m pytest -q tests\test_bridge.py
 ```
+
+Run the live persona regression suite against the configured model:
+
+```powershell
+.\scripts\persona-regression.ps1
+```
+
+Reports are saved under the ignored local `reports` directory.
 
 ## Building
 
@@ -142,4 +154,4 @@ NPCBridge binds to `127.0.0.1` by default. A future game adapter can point to a 
 - No generated quests or character movement
 - No API authentication while running on localhost
 
-The first working snapshot is tagged `v0.1.0`. Version `v0.1.1` changes the conversation key from `Alt+1` to `Alt+0`.
+The first working snapshot is tagged `v0.1.0`. Version `v0.1.1` changed the conversation key from `Alt+1` to `Alt+0`. Version `v0.2.0` adds the generic protocol, stronger persona handling, structured output validation, and paused waiting flow.
