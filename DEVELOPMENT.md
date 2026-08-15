@@ -117,6 +117,10 @@ Removed body-language narration from the dialogue box, made facial expressions s
 
 Added a stricter quality gate for insult responses. Linus no longer accepts self-pitying or wounded dialogue that conflicts with his calm, self-reliant profile.
 
+### v0.3.3
+
+Stopped text-entry keystrokes from reaching Stardew's normal menu shortcuts, including `E`. Added Escape cancellation while the model is generating, stale-response cleanup, clearer bridge errors, and expression text that works with both phrases and descriptions.
+
 Detailed notes for the first snapshot are in `docs/releases/v0.1.0.md`.
 
 ## Next work

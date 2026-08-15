@@ -9,17 +9,19 @@ namespace StardewAI;
 internal sealed class WaitingMenu : IClickableMenu
 {
     private readonly string message;
+    private readonly Action onCancel;
 
-    public WaitingMenu(string npcName)
+    public WaitingMenu(string npcName, Action onCancel)
         : base(Game1.uiViewport.Width / 2 - 280, Game1.uiViewport.Height / 2 - 80, 560, 160, false)
     {
         this.message = $"{npcName} is thinking...";
+        this.onCancel = onCancel;
     }
 
     public override void receiveKeyPress(Keys key)
     {
-        // The request remains active. Keeping this menu open also keeps normal
-        // single-player world updates paused until a response or error arrives.
+        if (key == Keys.Escape)
+            this.onCancel();
     }
 
     public override void draw(SpriteBatch b)

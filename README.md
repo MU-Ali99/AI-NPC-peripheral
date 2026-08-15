@@ -71,7 +71,7 @@ Then launch Stardew through:
 C:\Games\Stardew Valley\StardewModdingAPI.exe
 ```
 
-Load a save, walk within four tiles of Abigail or Linus, and press `Alt+0` on the top number row. Enter submits the message and Escape cancels it.
+Load a save, walk within four tiles of Abigail or Linus, and press `Alt+0` on the top number row. Enter submits the message and Escape cancels either typing or a request that is still generating.
 
 Do not launch `Stardew Valley.exe` directly; that starts the game without SMAPI or the mod.
 
@@ -160,4 +160,4 @@ NPCBridge binds to `127.0.0.1` by default. A future game adapter can point to a 
 - No generated quests or character movement
 - No API authentication while running on localhost
 
-The first working snapshot is tagged `v0.1.0`. Version `v0.1.1` changed the conversation key from `Alt+1` to `Alt+0`. Version `v0.2.0` added the generic protocol and paused waiting flow. Version `v0.2.1` added character-specific speech and reaction patterns. Version `v0.3.0` added persistent relationship consequences. Version `v0.3.1` focused visible reactions on facial expressions and allowed longer replies. Version `v0.3.2` rejects self-pitying insult responses that contradict a character's profile.
+The first working snapshot is tagged `v0.1.0`. Version `v0.1.1` changed the conversation key from `Alt+1` to `Alt+0`. Version `v0.2.0` added the generic protocol and paused waiting flow. Version `v0.2.1` added character-specific speech and reaction patterns. Version `v0.3.0` added persistent relationship consequences. Version `v0.3.1` focused visible reactions on facial expressions and allowed longer replies. Version `v0.3.2` rejected self-pitying insult responses. Version `v0.3.3` isolates text entry from gameplay shortcuts and makes pending requests cancellable.

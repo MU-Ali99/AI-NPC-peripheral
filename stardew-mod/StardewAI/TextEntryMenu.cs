@@ -51,7 +51,8 @@ internal sealed class TextEntryMenu : IClickableMenu
             }
             return;
         }
-        base.receiveKeyPress(key);
+        // TextBox receives printable characters through keyboardDispatcher.
+        // Do not forward them to Stardew's menu shortcuts (for example E).
     }
 
     private void Close()
@@ -70,4 +71,3 @@ internal sealed class TextEntryMenu : IClickableMenu
         this.drawMouse(b);
     }
 }
-
