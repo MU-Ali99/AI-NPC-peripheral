@@ -30,7 +30,7 @@ class OllamaBackend(LlmBackend):
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
             ],
-            "options": {"temperature": 0.2, "num_predict": 240, "num_ctx": 4096},
+            "options": {"temperature": 0.35, "num_predict": 240, "num_ctx": 4096},
         }
         if output_schema is not None:
             payload["format"] = output_schema

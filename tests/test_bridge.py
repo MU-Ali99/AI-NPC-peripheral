@@ -26,7 +26,7 @@ class FakeBackend(LlmBackend):
         if self.malformed:
             return "not json"
         sentiment=self.sentiments[min(self.calls-1,len(self.sentiments)-1)]
-        return json.dumps({"dialogue":"A character-specific reply.","sentiment":sentiment,"facialExpression":"a thoughtful frown"})
+        return json.dumps({"dialogue":f"A character-specific reply number {self.calls}.","sentiment":sentiment,"facialExpression":"a thoughtful frown"})
 
 class BrokenBackend(LlmBackend):
     async def generate(self,*args,**kwargs)->str:
@@ -61,7 +61,7 @@ def test_recent_completed_history_is_supplied_to_model() -> None:
     client=TestClient(create_app(settings(),backend))
     client.post("/v2/conversation",json=payload("My dog's name is Bruno."))
     client.post("/v2/conversation",json=payload("Do you remember his name?"))
-    assert "Bruno" in backend.users[1] and "A character-specific reply." in backend.users[1]
+    assert "Bruno" in backend.users[1] and "A character-specific reply number 1." in backend.users[1]
 
 def test_failed_model_call_does_not_change_score(tmp_path: Path) -> None:
     db=tmp_path/"memory.db"
@@ -137,3 +137,13 @@ def test_body_movement_in_expression_is_retried() -> None:
     backend=ExpressionBackend()
     result=TestClient(create_app(settings(),backend)).post("/v2/conversation",json=payload()).json()
     assert result["success"] and result["facialExpression"]=="a slight smile" and backend.calls==2
+
+def test_terse_or_repeated_dialogue_is_retried() -> None:
+    class TerseBackend(FakeBackend):
+        async def generate(self,system,user,output_schema=None):
+            self.calls+=1
+            dialogue="Don't." if self.calls==1 else "You have worn out your welcome here."
+            return json.dumps({"dialogue":dialogue,"sentiment":"NEGATIVE","facialExpression":"an angry frown"})
+    backend=TerseBackend()
+    result=TestClient(create_app(settings(),backend)).post("/v2/conversation",json=payload("Leave me alone.")).json()
+    assert result["success"] and result["dialogue"]=="You have worn out your welcome here." and backend.calls==2

@@ -26,14 +26,24 @@ class PersonaEngine:
                       relationship: RelationshipSnapshot, history: list[HistoryTurn]) -> ModelDialogue:
         system,user=self.build_prompt(request,profile,relationship,history)
         last_error: Exception|None=None
+        correction=""
         for attempt in range(2):
             try:
-                retry=system if attempt==0 else system+"\nYour previous output was invalid. Return exactly the required JSON object."
+                retry=system if attempt==0 else system+f"""\n
+RETRY CORRECTION:
+The previous answer failed quality validation: {correction or "invalid structured output"}.
+Write a fresh, specific response. Do not repeat or lightly rephrase a recent NPC reply.
+Return exactly the required JSON object."""
                 parsed=self._parse(await self.backend.generate(retry,user,OUTPUT_SCHEMA))
                 if self._breaks_immersion(parsed.dialogue):
+                    correction="it broke character"
                     raise ValueError("immersion break")
                 if not self._is_facial_expression(parsed.facialExpression):
+                    correction="facialExpression contained body movement"
                     raise ValueError("facialExpression described body movement")
+                if self._is_repetitive_or_empty(parsed,history):
+                    correction="the dialogue was too terse or repeated recent dialogue"
+                    raise ValueError("repetitive or empty dialogue")
                 limit=min(profile.maximumCharacters,self.maximum_characters)
                 return parsed.model_copy(update={"dialogue":self.clean_dialogue(parsed.dialogue,limit)})
             except (ValidationError,json.JSONDecodeError,KeyError,TypeError,ValueError) as exc:
@@ -59,7 +69,13 @@ Rules:
 - Never call yourself an AI, assistant, NPC, model, simulation, or fictional character.
 - Respond specifically and naturally in this character's unique voice.
 - The current relationship is {relationship.state} ({relationship.score}/1000). Let it affect warmth, patience, and trust.
+- Relationship state affects the reply, but NEVER changes the sentiment judgment. Sentiment describes only the current message.
 - Use recent completed conversations as memory. Do not invent conversations that are not supplied.
+- Never copy a recent NPC reply. Continue the exchange with new wording and information.
+- Even when angry, give a meaningful character-specific response rather than only “Don't”, “Stop”, a grunt, or one dismissive word.
+- When the current message insults or threatens you, respond directly to it. Do not change the subject to weather, scenery, advice, or small talk.
+- If the player asks what they previously said, quote or closely restate the relevant supplied player message. Do not replace it with a vague phrase like “unkind things.”
+- At OFFENDED, VERY_NEGATIVE, or HOSTILE, show sustained distrust and firmer boundaries. Do not become bland, forget the pattern, or act friendly without a reason.
 - Judge only the CURRENT player message toward you as exactly POSITIVE, NEUTRAL, or NEGATIVE.
 - Determine the target and meaning in context. A bad day, bad weather, or an insult about someone else is not automatically negative toward you.
 - Mixed language should be judged by its overall social effect on you.
@@ -107,6 +123,15 @@ Required output shape:
         lowered=expression.lower()
         body_actions=("nod","shrug","step","turns away","crosses arms","leans","walks","waves","hands ")
         return not any(action in lowered for action in body_actions)
+
+    @staticmethod
+    def _is_repetitive_or_empty(result: ModelDialogue, history: list[HistoryTurn]) -> bool:
+        normalized=lambda value: re.sub(r"[^a-z0-9]+"," ",value.lower()).strip()
+        dialogue=normalized(result.dialogue)
+        words=dialogue.split()
+        if len(dialogue.replace(" ","")) < 8:
+            return True
+        return len(words) <= 5 and any(dialogue==normalized(turn.npc_dialogue) for turn in history if turn.npc_dialogue)
 
     @staticmethod
     def clean_dialogue(text: str, maximum: int) -> str:
