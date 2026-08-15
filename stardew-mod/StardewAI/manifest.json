@@ -1,7 +1,7 @@
 {
   "Name": "Stardew AI",
   "Author": "AI NPC Peripheral",
-  "Version": "0.3.3",
+  "Version": "0.3.4",
   "Description": "Adds opt-in AI NPC conversations through the standalone NPCBridge service.",
   "UniqueID": "AINPCPeripheral.StardewAI",
   "EntryDll": "StardewAI.dll",

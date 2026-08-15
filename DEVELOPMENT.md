@@ -121,6 +121,10 @@ Added a stricter quality gate for insult responses. Linus no longer accepts self
 
 Stopped text-entry keystrokes from reaching Stardew's normal menu shortcuts, including `E`. Added Escape cancellation while the model is generating, stale-response cleanup, clearer bridge errors, and expression text that works with both phrases and descriptions.
 
+### v0.3.4
+
+Removed an over-broad SMAPI input suppression hook that also swallowed Enter and Escape. Key isolation remains inside the text-entry menu, where printable keys are no longer forwarded to the base Stardew menu.
+
 Detailed notes for the first snapshot are in `docs/releases/v0.1.0.md`.
 
 ## Next work

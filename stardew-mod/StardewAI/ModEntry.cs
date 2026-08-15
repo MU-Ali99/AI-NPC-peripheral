@@ -22,16 +22,9 @@ internal sealed class ModEntry : Mod
         this.config = helper.ReadConfig<ModConfig>();
         this.httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(this.config.RequestTimeoutSeconds) };
         helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
-        helper.Events.Input.ButtonPressed += this.OnButtonPressed;
         helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
         helper.Events.GameLoop.ReturnedToTitle += (_, _) => this.CancelPendingRequest(false);
         this.Monitor.Log($"Stardew AI loaded. Conversation key: {this.config.ConversationKey}; bridge: {this.config.BridgeUrl}", LogLevel.Info);
-    }
-
-    private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
-    {
-        if (Game1.activeClickableMenu is TextEntryMenu)
-            this.Helper.Input.Suppress(e.Button);
     }
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
