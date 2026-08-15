@@ -1,61 +1,64 @@
 from __future__ import annotations
 
 import logging
-import re
 import time
-
 from fastapi import FastAPI
-
 from . import __version__
 from .backends import LlmBackend, LlmBackendError, OllamaBackend
 from .config import Settings
-from .models import ConversationRequest, ConversationResponse
-from .profiles import ProfileNotFoundError, ProfileStore
-from .prompt import build_prompt
+from .models import ConversationRequestV1, ConversationRequestV2, ConversationResponseV1, ConversationResponseV2, ExtendedContext, GameIdentity, NpcIdentity, PlayerIdentity, RelationshipContext, WorldContextV2
+from .persona import PersonaEngine
+from .profiles import InvalidProfileError, ProfileNotFoundError, ProfileStore
 
 logger = logging.getLogger("npc_bridge")
 
-
-def clean_dialogue(text: str, maximum: int) -> str:
-    cleaned = re.sub(r"^(?:[A-Za-z ]+:\s*)", "", text.strip())
-    cleaned = cleaned.strip('"“”')
-    if len(cleaned) <= maximum:
-        return cleaned
-    shortened = cleaned[: maximum - 1].rsplit(" ", 1)[0].rstrip(" ,;:")
-    return f"{shortened}…"
-
+def translate_v1(request: ConversationRequestV1) -> ConversationRequestV2:
+    return ConversationRequestV2(
+        game=GameIdentity(id=request.game, name="Stardew Valley"),
+        npc=NpcIdentity(id=request.npc.id, displayName=request.npc.displayName, profileId=f"{request.game}.{request.npc.id.lower()}"),
+        player=PlayerIdentity(id="player", displayName=request.player.name, message=request.player.message),
+        relationship=RelationshipContext(level=request.npc.friendshipHearts, label="friendship_hearts"),
+        world=WorldContextV2(location=request.world.location, time=request.world.time, day=request.world.day, season=request.world.season, weather=request.world.weather),
+        context=ExtendedContext()
+    )
 
 def create_app(settings: Settings | None = None, backend: LlmBackend | None = None) -> FastAPI:
     settings = settings or Settings.load()
     backend = backend or OllamaBackend(settings.ollama_endpoint, settings.ollama_model, settings.ollama_timeout_seconds)
     profiles = ProfileStore(settings.profiles_path)
+    persona = PersonaEngine(backend, settings.maximum_characters)
     api = FastAPI(title="NPCBridge", version=__version__)
 
     @api.get("/health")
     async def health() -> dict:
-        return {"status": "ok", "version": __version__, "backend": type(backend).__name__}
+        return {"status": "ok", "version": __version__, "backend": type(backend).__name__, "protocols": ["1.0", "2.0"]}
 
-    @api.post("/v1/conversation", response_model=ConversationResponse)
-    @api.post("/conversation", response_model=ConversationResponse, include_in_schema=False)
-    async def conversation(request: ConversationRequest) -> ConversationResponse:
+    async def run(request: ConversationRequestV2) -> ConversationResponseV2:
         started = time.perf_counter()
-        logger.info("Request received game=%s npc=%s", request.game, request.npc.id)
+        logger.info("Request received game=%s npc=%s profile=%s", request.game.id, request.npc.id, request.npc.profileId)
         try:
-            profile = profiles.load(request.game, request.npc.id)
-            system, user = build_prompt(request, profile)
-            logger.info("Calling model npc=%s", request.npc.id)
-            dialogue = clean_dialogue(await backend.generate(system, user), settings.maximum_characters)
+            profile = profiles.load(request.npc.profileId)
+            result = await persona.respond(request, profile)
             logger.info("Request completed npc=%s elapsed_ms=%d", request.npc.id, (time.perf_counter() - started) * 1000)
-            return ConversationResponse(success=True, npc=request.npc.displayName, dialogue=dialogue)
+            return ConversationResponseV2(success=True, npc=request.npc.displayName, dialogue=result.dialogue, emotion=result.emotion, confidence=result.confidence)
         except ProfileNotFoundError as exc:
-            logger.warning("Profile unavailable npc=%s", request.npc.id)
-            return ConversationResponse(success=False, npc=request.npc.displayName, error=str(exc))
+            return ConversationResponseV2(success=False, npc=request.npc.displayName, errorCode="profile_not_found", error=str(exc))
+        except InvalidProfileError as exc:
+            return ConversationResponseV2(success=False, npc=request.npc.displayName, errorCode="invalid_profile", error=str(exc))
         except LlmBackendError as exc:
             logger.error("Model call failed npc=%s: %s", request.npc.id, exc)
-            return ConversationResponse(success=False, npc=request.npc.displayName, error=str(exc))
+            return ConversationResponseV2(success=False, npc=request.npc.displayName, errorCode="backend_error", error=str(exc))
+
+    @api.post("/v2/conversation", response_model=ConversationResponseV2)
+    async def conversation_v2(request: ConversationRequestV2) -> ConversationResponseV2:
+        return await run(request)
+
+    @api.post("/v1/conversation", response_model=ConversationResponseV1)
+    @api.post("/conversation", response_model=ConversationResponseV1, include_in_schema=False)
+    async def conversation_v1(request: ConversationRequestV1) -> ConversationResponseV1:
+        result = await run(translate_v1(request))
+        return ConversationResponseV1(success=result.success, npc=result.npc, dialogue=result.dialogue, error=result.error)
 
     return api
 
-
 app = create_app()
-

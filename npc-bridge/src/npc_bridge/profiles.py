@@ -1,25 +1,62 @@
-import json
-import re
-from pathlib import Path
+from __future__ import annotations
 
+import json
+from pathlib import Path
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 class ProfileNotFoundError(Exception):
     pass
 
+class InvalidProfileError(Exception):
+    pass
+
+class IdentityProfile(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    name: str
+    game: str
+    description: str = ""
+
+class PersonalityProfile(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    traits: list[str] = Field(default_factory=list)
+    tone: list[str] = Field(default_factory=list)
+    behavior: list[str] = Field(default_factory=list)
+
+class KnowledgeProfile(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    gameWorld: list[str] = Field(default_factory=list)
+    generalKnowledge: bool = True
+    boundaries: list[str] = Field(default_factory=list)
+
+class PersonaBoundaries(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    stayInCharacter: bool = True
+    neverMentionAI: bool = True
+    rules: list[str] = Field(default_factory=list)
+
+class NpcProfile(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    id: str
+    identity: IdentityProfile
+    personality: PersonalityProfile
+    knowledge: KnowledgeProfile = Field(default_factory=KnowledgeProfile)
+    boundaries: PersonaBoundaries = Field(default_factory=PersonaBoundaries)
+    maximumCharacters: int = Field(default=400, ge=40, le=2000)
 
 class ProfileStore:
     def __init__(self, root: Path):
         self.root = root
 
-    def load(self, game: str, npc_id: str) -> dict:
-        safe_game = self._slug(game)
-        safe_npc = self._slug(npc_id)
-        path = self.root / safe_game / f"{safe_npc}.json"
-        if not path.is_file():
-            raise ProfileNotFoundError(f"No AI profile is available for {npc_id}.")
-        return json.loads(path.read_text(encoding="utf-8"))
-
-    @staticmethod
-    def _slug(value: str) -> str:
-        return re.sub(r"[^a-z0-9_-]", "", value.lower().replace(" ", "_"))
-
+    def load(self, profile_id: str) -> NpcProfile:
+        for path in self.root.rglob("*.json"):
+            try:
+                raw = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                continue
+            if raw.get("id") != profile_id:
+                continue
+            try:
+                return NpcProfile.model_validate(raw)
+            except ValidationError as exc:
+                raise InvalidProfileError(f"Profile '{profile_id}' is invalid.") from exc
+        raise ProfileNotFoundError(f"No NPC profile is available for '{profile_id}'.")

@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.ai-npc-peripheral/protocol/conversation-v2.schema.json",
+  "title": "NPCBridge Conversation Request v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["protocolVersion", "game", "npc", "player"],
+  "properties": {
+    "protocolVersion": { "const": "2.0" },
+    "game": {
+      "type": "object", "additionalProperties": false, "required": ["id"],
+      "properties": { "id": { "type": "string" }, "name": { "type": ["string", "null"] } }
+    },
+    "npc": {
+      "type": "object", "additionalProperties": false, "required": ["id", "displayName", "profileId"],
+      "properties": {
+        "id": { "type": "string" }, "displayName": { "type": "string" }, "profileId": { "type": "string" }
+      }
+    },
+    "player": {
+      "type": "object", "additionalProperties": false, "required": ["displayName", "message"],
+      "properties": {
+        "id": { "type": "string", "default": "player" }, "displayName": { "type": "string" }, "message": { "type": "string", "maxLength": 1000 }
+      }
+    },
+    "relationship": {
+      "type": ["object", "null"], "additionalProperties": false,
+      "properties": { "level": { "type": ["number", "null"] }, "label": { "type": ["string", "null"] }, "custom": { "type": "object" } }
+    },
+    "world": {
+      "type": ["object", "null"], "additionalProperties": false,
+      "properties": {
+        "location": { "type": ["string", "null"] }, "time": { "type": ["string", "integer", "null"] },
+        "day": { "type": ["integer", "string", "null"] }, "season": { "type": ["string", "null"] },
+        "weather": { "type": ["string", "null"] }, "custom": { "type": "object" }
+      }
+    },
+    "context": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "nearbyCharacters": { "type": "array" }, "recentEvents": { "type": "array" },
+        "questState": { "type": "object" }, "custom": { "type": "object" }
+      }
+    }
+  }
+}

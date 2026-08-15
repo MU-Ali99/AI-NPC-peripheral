@@ -6,7 +6,7 @@
   },
   "ollama": {
     "endpoint": "http://127.0.0.1:11434",
-    "model": "qwen2.5:1.5b",
+    "model": "qwen2.5:3b",
     "timeoutSeconds": 75
   },
   "dialogue": {
