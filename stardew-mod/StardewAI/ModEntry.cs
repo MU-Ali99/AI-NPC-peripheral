@@ -30,6 +30,11 @@ internal sealed class ModEntry : Mod
     {
         if (!Context.IsWorldReady || !this.config.ConversationKey.JustPressed() || Game1.activeClickableMenu is not null)
             return;
+        if (Context.IsMultiplayer)
+        {
+            Game1.addHUDMessage(new HUDMessage("AI conversations currently support single-player games only.", HUDMessage.error_type));
+            return;
+        }
         if (this.requestInProgress)
         {
             Game1.addHUDMessage(new HUDMessage("An AI conversation is already processing.", HUDMessage.error_type));
@@ -62,16 +67,31 @@ internal sealed class ModEntry : Mod
             ? friendship.Points / 250
             : 0;
         string weather = Game1.IsRainingHere(Game1.currentLocation) ? "rain" : Game1.isSnowing ? "snow" : "clear";
+        string time = $"{Game1.timeOfDay / 100:D2}:{Game1.timeOfDay % 100:D2}";
+        List<Dictionary<string, object>> nearbyCharacters = Game1.currentLocation.characters
+            .Where(character => character.IsVillager && character.Name != npc.Name && Vector2.Distance(Game1.player.Tile, character.Tile) <= 8f)
+            .Select(character => new Dictionary<string, object>
+            {
+                ["id"] = character.Name,
+                ["displayName"] = character.displayName
+            })
+            .ToList();
         var request = new ConversationRequest(
-            "1.0",
-            "stardew_valley",
-            new NpcContext(npc.Name, npc.displayName, Math.Clamp(hearts, 0, 14)),
-            new WorldContext(Game1.currentLocation.NameOrUniqueName, Game1.currentSeason, Game1.dayOfMonth, Game1.timeOfDay, weather),
-            new PlayerContext(Game1.player.Name, message)
+            "2.0",
+            new GameIdentity("stardew_valley", "Stardew Valley"),
+            new NpcIdentity(npc.Name, npc.displayName, $"stardew_valley.{npc.Name.ToLowerInvariant()}"),
+            new PlayerIdentity(Game1.player.UniqueMultiplayerID.ToString(), Game1.player.Name, message),
+            new RelationshipContext(Math.Clamp(hearts, 0, 14), "friendship_hearts", new Dictionary<string, object>()),
+            new WorldContext(Game1.currentLocation.NameOrUniqueName, time, Game1.dayOfMonth, Game1.currentSeason, weather, new Dictionary<string, object>()),
+            new ExtendedContext(nearbyCharacters, new List<object>(), new Dictionary<string, object>(), new Dictionary<string, object>
+            {
+                ["adapter"] = "AINPCPeripheral.StardewAI",
+                ["singlePlayer"] = !Context.IsMultiplayer
+            })
         );
 
         this.requestInProgress = true;
-        Game1.addHUDMessage(new HUDMessage($"{npc.displayName} is thinking..."));
+        Game1.activeClickableMenu = new WaitingMenu(npc.displayName);
         this.Monitor.Log($"Sending request for {npc.Name}", LogLevel.Info);
         _ = this.SendConversationAsync(request);
     }
@@ -86,13 +106,13 @@ internal sealed class ModEntry : Mod
             if (result is null)
                 throw new InvalidDataException("NPCBridge returned an empty response.");
             this.pendingDialogues.Enqueue(result.Success
-                ? new PendingDialogue(request.Npc.Id, result.Dialogue, null)
-                : new PendingDialogue(request.Npc.Id, null, result.Error ?? "NPCBridge could not generate dialogue."));
+                ? new PendingDialogue(request.Npc.Id, result.Dialogue, result.Emotion, null)
+                : new PendingDialogue(request.Npc.Id, null, null, result.Error ?? "NPCBridge could not generate dialogue."));
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException or InvalidDataException)
         {
             this.Monitor.Log($"NPCBridge request failed: {ex.Message}", LogLevel.Error);
-            this.pendingDialogues.Enqueue(new PendingDialogue(request.Npc.Id, null, "AI conversation service is unavailable."));
+            this.pendingDialogues.Enqueue(new PendingDialogue(request.Npc.Id, null, null, "AI conversation service is unavailable."));
         }
     }
 
@@ -103,6 +123,7 @@ internal sealed class ModEntry : Mod
             this.requestInProgress = false;
             if (result.Error is not null)
             {
+                Game1.exitActiveMenu();
                 Game1.addHUDMessage(new HUDMessage(result.Error, HUDMessage.error_type));
                 continue;
             }

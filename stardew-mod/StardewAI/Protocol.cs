@@ -4,29 +4,51 @@ namespace StardewAI;
 
 internal sealed record ConversationRequest(
     [property: JsonPropertyName("protocolVersion")] string ProtocolVersion,
-    [property: JsonPropertyName("game")] string Game,
-    [property: JsonPropertyName("npc")] NpcContext Npc,
-    [property: JsonPropertyName("world")] WorldContext World,
-    [property: JsonPropertyName("player")] PlayerContext Player
+    [property: JsonPropertyName("game")] GameIdentity Game,
+    [property: JsonPropertyName("npc")] NpcIdentity Npc,
+    [property: JsonPropertyName("player")] PlayerIdentity Player,
+    [property: JsonPropertyName("relationship")] RelationshipContext? Relationship,
+    [property: JsonPropertyName("world")] WorldContext? World,
+    [property: JsonPropertyName("context")] ExtendedContext Context
 );
 
-internal sealed record NpcContext(
+internal sealed record GameIdentity(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("name")] string Name
+);
+
+internal sealed record NpcIdentity(
     [property: JsonPropertyName("id")] string Id,
     [property: JsonPropertyName("displayName")] string DisplayName,
-    [property: JsonPropertyName("friendshipHearts")] int FriendshipHearts
+    [property: JsonPropertyName("profileId")] string ProfileId
+);
+
+internal sealed record PlayerIdentity(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("displayName")] string DisplayName,
+    [property: JsonPropertyName("message")] string Message
+);
+
+internal sealed record RelationshipContext(
+    [property: JsonPropertyName("level")] double? Level,
+    [property: JsonPropertyName("label")] string? Label,
+    [property: JsonPropertyName("custom")] Dictionary<string, object> Custom
 );
 
 internal sealed record WorldContext(
-    [property: JsonPropertyName("location")] string Location,
-    [property: JsonPropertyName("season")] string Season,
-    [property: JsonPropertyName("day")] int Day,
-    [property: JsonPropertyName("time")] int Time,
-    [property: JsonPropertyName("weather")] string Weather
+    [property: JsonPropertyName("location")] string? Location,
+    [property: JsonPropertyName("time")] string? Time,
+    [property: JsonPropertyName("day")] int? Day,
+    [property: JsonPropertyName("season")] string? Season,
+    [property: JsonPropertyName("weather")] string? Weather,
+    [property: JsonPropertyName("custom")] Dictionary<string, object> Custom
 );
 
-internal sealed record PlayerContext(
-    [property: JsonPropertyName("name")] string Name,
-    [property: JsonPropertyName("message")] string Message
+internal sealed record ExtendedContext(
+    [property: JsonPropertyName("nearbyCharacters")] List<Dictionary<string, object>> NearbyCharacters,
+    [property: JsonPropertyName("recentEvents")] List<object> RecentEvents,
+    [property: JsonPropertyName("questState")] Dictionary<string, object> QuestState,
+    [property: JsonPropertyName("custom")] Dictionary<string, object> Custom
 );
 
 internal sealed record ConversationResponse(
@@ -34,8 +56,10 @@ internal sealed record ConversationResponse(
     [property: JsonPropertyName("success")] bool Success,
     [property: JsonPropertyName("npc")] string Npc,
     [property: JsonPropertyName("dialogue")] string Dialogue,
+    [property: JsonPropertyName("emotion")] string? Emotion,
+    [property: JsonPropertyName("confidence")] double? Confidence,
+    [property: JsonPropertyName("errorCode")] string? ErrorCode,
     [property: JsonPropertyName("error")] string? Error
 );
 
-internal sealed record PendingDialogue(string NpcId, string? Dialogue, string? Error);
-
+internal sealed record PendingDialogue(string NpcId, string? Dialogue, string? Emotion, string? Error);
