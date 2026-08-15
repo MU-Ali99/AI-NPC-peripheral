@@ -1,128 +1,145 @@
 # AI NPC Peripheral
 
-Local-first prototype connecting Stardew Valley to a standalone AI dialogue service over HTTP/JSON.
+This is a local prototype for talking to game characters through a language model. Stardew Valley is the first game adapter, but the bridge runs as a separate service so it can later move to another PC or a dedicated device.
 
 ```text
-Stardew Valley -> SMAPI mod -> NPCBridge -> replaceable LLM backend (initially Ollama)
+Stardew Valley -> SMAPI mod -> NPCBridge -> Ollama
 ```
 
-The first milestone is a text-only conversation using a configurable `Alt+0` hotkey. Voice, autonomous movement, generated quests, and complex memory are intentionally out of scope.
+The current build is text-only. Walk near a supported character, press `Alt+0`, type a message, and the reply is shown in a Stardew dialogue box.
 
-## Current prototype
+## What works
 
-The complete MVP is implemented and installed locally:
+- Stardew Valley 1.6.0 with SMAPI 4.0.6
+- Configurable `Alt+0` conversation key
+- Nearest-villager detection
+- Custom in-game text input
+- Non-blocking HTTP requests while the model generates a reply
+- Player, relationship, location, date, time, and weather context
+- Abigail and Linus character profiles
+- Local inference through Ollama and `qwen2.5:1.5b`
+- Python source mode and a packaged `NPCBridge.exe`
+- Request validation, timeouts, readable errors, and automated tests
 
-- Stardew Valley `1.6.0` with pinned SMAPI `4.0.6`.
-- Stardew AI SMAPI mod with configurable `Alt+0` activation.
-- In-game text entry, nearest-NPC targeting, world/relationship context, and non-blocking HTTP.
-- NPCBridge FastAPI service with a versioned protocol and replaceable LLM backend.
-- Ollama `0.32.9` with `qwen2.5:1.5b` (approximately 986 MB model payload).
-- External original Abigail and Linus profiles.
-- Standalone Windows `NPCBridge.exe` package.
+## Project layout
 
-Automated API, model, build, packaging, and SMAPI load checks pass. The remaining acceptance check is using `Alt+0` beside Abigail or Linus in a loaded save.
+- `stardew-mod/StardewAI/` - the SMAPI game adapter
+- `npc-bridge/` - the standalone dialogue service
+- `npc-profiles/` - character profiles used by the bridge
+- `protocol/` - the HTTP/JSON contract
+- `config/` - bridge defaults
+- `tests/` - bridge tests
+- `scripts/` - setup, build, startup, and test scripts
+- `docs/` - release notes and technical notes
 
-## Layout
+Game files, model files, build output, and local configuration are intentionally excluded from Git.
 
-- `stardew-mod/StardewAI/` — game adapter implemented as a SMAPI C# mod.
-- `npc-bridge/` — standalone, game-agnostic AI middleware.
-- `npc-profiles/` — original behavioral profiles, kept outside the mod.
-- `protocol/` — versioned HTTP/JSON contract.
-- `config/` — safe default configuration; local settings are ignored by Git.
-- `tests/` — automated tests.
-- `docs/` — architecture and operational documentation.
-- `scripts/` — environment, startup, test, and packaging scripts.
+## Requirements
 
-Setup and usage instructions will be expanded as each component becomes operational.
+The prototype was built and tested with:
 
-## Quick start
+- Windows 11
+- Stardew Valley 1.6.0 (GOG)
+- SMAPI 4.0.6
+- .NET SDK 10, targeting .NET 6 for the mod
+- Python 3.12
+- Ollama 0.32.9
+- `qwen2.5:1.5b`
 
-1. Start the AI service:
+SMAPI is pinned to 4.0.6 because newer releases require a newer Stardew Valley version.
 
-   ```powershell
-   powershell -ExecutionPolicy Bypass -File .\scripts\start-system.ps1
-   ```
+## Running it
 
-2. Launch the game through:
+From PowerShell in the project folder:
 
-   ```text
-   C:\Games\Stardew Valley\StardewModdingAPI.exe
-   ```
+```powershell
+.\scripts\start-system.ps1
+```
 
-3. Load a save, stand within four tiles of Abigail or Linus, and press `Alt+0` on the keyboard's top number row.
-4. Type a message and press Enter. Press Escape to cancel.
+Then launch Stardew through:
 
-The service must remain running while playing. Ollama normally starts with Windows; `start-system.ps1` also attempts to start it if needed.
+```text
+C:\Games\Stardew Valley\StardewModdingAPI.exe
+```
+
+Load a save, walk within four tiles of Abigail or Linus, and press `Alt+0` on the top number row. Enter submits the message and Escape cancels it.
+
+Do not launch `Stardew Valley.exe` directly; that starts the game without SMAPI or the mod.
 
 ## Development setup
 
-Installed prerequisites:
-
-- Git 2.54
-- .NET SDK 10 (the mod targets .NET 6 to match this game build)
-- Python 3.12.10
-- Ollama 0.32.9
-- Stardew Valley 1.6.0 and SMAPI 4.0.6
-
-Create/update the Python environment:
+Create the virtual environment and install the Python dependencies:
 
 ```powershell
 .\scripts\setup-dev.ps1
 ```
 
-Start the Python source service:
+Run the bridge from source:
 
 ```powershell
 .\scripts\start-bridge.ps1
 ```
 
-Test the running API:
+Test a running bridge:
 
 ```powershell
 .\scripts\test-bridge.ps1
 ```
 
-Run automated tests:
+Run the test suite:
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest -q tests\test_bridge.py
 ```
 
-## Build and install
+## Building
 
-Build and install the SMAPI mod:
+Build and install the Stardew mod:
 
 ```powershell
 .\scripts\build-mod.ps1
 .\scripts\install-mod.ps1
 ```
 
-Build the standalone service:
+Build the Windows bridge package:
 
 ```powershell
 .\scripts\build-bridge-exe.ps1
 ```
 
-Output is written to `artifacts\NPCBridge\`. Keep `NPCBridge.exe`, `config`, and `npc-profiles` together if moving the package.
+The packaged service is written to `artifacts\NPCBridge`. Keep the executable, `config`, and `npc-profiles` together when moving it.
 
 ## Configuration
 
-NPCBridge defaults are in `config/default.json`. Environment overrides include `NPCBRIDGE_HOST`, `NPCBRIDGE_PORT`, `NPCBRIDGE_OLLAMA_ENDPOINT`, `NPCBRIDGE_MODEL`, `NPCBRIDGE_CONFIG`, and `NPCBRIDGE_PROFILES`.
+Bridge defaults live in `config/default.json`. They can be overridden with these environment variables:
 
-The mod creates `C:\Games\Stardew Valley\Mods\StardewAI\config.json` on first launch. It controls the hotkey, bridge URL, timeout, and interaction distance. Keep the default loopback binding for local use. A future peripheral can use a LAN address without changing the mod code.
+- `NPCBRIDGE_HOST`
+- `NPCBRIDGE_PORT`
+- `NPCBRIDGE_OLLAMA_ENDPOINT`
+- `NPCBRIDGE_MODEL`
+- `NPCBRIDGE_CONFIG`
+- `NPCBRIDGE_PROFILES`
+
+The mod writes its local settings to `C:\Games\Stardew Valley\Mods\StardewAI\config.json`. That file controls the hotkey, bridge address, timeout, and interaction distance.
+
+NPCBridge binds to `127.0.0.1` by default. A future game adapter can point to a LAN address without embedding the model inside the game mod.
 
 ## Troubleshooting
 
-- **Service unavailable:** run `scripts\start-system.ps1`, then open `http://127.0.0.1:8765/health` or run `scripts\test-bridge.ps1`.
-- **Hotkey does nothing:** launch through `StardewModdingAPI.exe`, load a save, close other menus, and stand near a villager.
-- **No profile:** the prototype currently supports Abigail and Linus. Other NPCs return a safe error until a profile is added.
-- **Slow first response:** Ollama must load the model into memory on the first request.
-- **SMAPI update notice:** do not update SMAPI beyond 4.0.6 while the game remains at 1.6.0.
-- **Logs:** SMAPI logs are under `%APPDATA%\StardewValley\ErrorLogs`; NPCBridge logs to its console.
+- If the hotkey does nothing, make sure the game was launched through `StardewModdingAPI.exe`.
+- If the bridge is unavailable, run `scripts\start-system.ps1` and then `scripts\test-bridge.ps1`.
+- If a character has no profile, the bridge returns a safe error. Only Abigail and Linus are included right now.
+- The first response can be slower because Ollama needs to load the model into memory.
+- SMAPI logs are stored under `%APPDATA%\StardewValley\ErrorLogs`.
+- Leave SMAPI at 4.0.6 while using Stardew Valley 1.6.0.
 
-## Known limitations
+## Current limits
 
-- Two NPC profiles (Abigail and Linus), text-to-text only.
-- No conversation memory, voice, generated quests, or autonomous behavior.
-- Generated dialogue uses a compatible vanilla dialogue box on Stardew 1.6.0.
-- The API has no authentication because it binds to `127.0.0.1` by default. Add network security before exposing it beyond the local PC.
+- Text conversation only
+- Two character profiles
+- No conversation memory
+- No voice input or speech output
+- No generated quests or character movement
+- No API authentication while running on localhost
+
+The first working snapshot is tagged `v0.1.0`. Version `v0.1.1` changes the conversation key from `Alt+1` to `Alt+0`.

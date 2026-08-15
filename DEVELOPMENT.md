@@ -1,73 +1,103 @@
-# Development Log
+# Development Notes
 
-Last updated: 2026-08-13
+Last updated: 2026-08-15
 
-## Architecture decisions
+## Goal
 
-- Keep the SMAPI game adapter and NPCBridge in separate processes.
-- Communicate using a versioned HTTP/JSON protocol.
-- Keep prompt construction, profiles, and LLM integration in NPCBridge.
-- Model the LLM behind a replaceable backend interface; Ollama is only the first implementation.
-- Keep machine-specific paths in ignored local configuration or documentation, never scattered through source.
-- Preserve normal Stardew interactions; AI dialogue will use a separate configurable hotkey.
+The first milestone is a complete local text conversation:
 
-## Environment discovery
+```text
+player message
+  -> Stardew SMAPI adapter
+  -> NPCBridge HTTP API
+  -> Ollama
+  -> NPCBridge
+  -> Stardew dialogue box
+```
 
-### Stardew Valley
+The game adapter and dialogue service are separate on purpose. The mod gathers game state, while NPCBridge owns profiles, prompt construction, model access, validation, and response cleanup. Moving the bridge to another machine should only require changing its address in the mod configuration.
 
-- Installation path: `C:\Games\Stardew Valley`
-- Distribution indicators: GOG metadata is present.
-- Executable: `C:\Games\Stardew Valley\Stardew Valley.exe`
-- Detected file/product version: `1.6.0.24079` / `1.6.0`
-- SMAPI status: version `4.0.6` manually installed from the official GitHub release payload using the release's documented manual procedure.
-- SMAPI executable: `C:\Games\Stardew Valley\StardewModdingAPI.exe`
-- Bundled mods installed: Console Commands and Save Backup.
-- SMAPI installer archive SHA-256: `8BD7373F10E05BAD969483CC963E785E49B9511A42D9ABF7E82E49E8518CDB8E`.
-- No original game files were modified during inspection.
-- The project intentionally pins SMAPI 4.0.6 because the game will remain on Stardew Valley 1.6.0. SMAPI 4.0.6 is the last release explicitly documented for Stardew Valley 1.6.0 or later; newer SMAPI releases require newer game versions.
-- SMAPI file/version and title-screen launch verification passed.
+## Local environment
 
-### Development tools
+- Stardew Valley: `1.6.0`, build `24079`, GOG installation
+- Game folder: `C:\Games\Stardew Valley`
+- SMAPI: `4.0.6`
+- Git: `2.54.0`
+- .NET SDK: `10.0.203`
+- Python: `3.12.10`
+- Ollama: `0.32.9`
+- Model: `qwen2.5:1.5b`
 
-- Git: `2.54.0.windows.1` installed.
-- .NET SDK: `10.0.203` installed; the mod targets .NET 6 for the pinned game/SMAPI build.
-- Python: `3.12.10` installed through winget (`Python.Python.3.12`).
-- Ollama: `0.32.9` installed through winget (`Ollama.Ollama`); API verified at `http://127.0.0.1:11434`.
-- Model: `qwen2.5:1.5b`, approximately 986 MB model payload, pulled with `ollama pull qwen2.5:1.5b`.
+SMAPI 4.0.6 is intentionally pinned because the game is staying on 1.6.0. The official SMAPI installer payload was downloaded from its GitHub release. Its SHA-256 was:
 
-## Safety and repository policy
+```text
+8BD7373F10E05BAD969483CC963E785E49B9511A42D9ABF7E82E49E8518CDB8E
+```
 
-- The local `Stardew Valley/` installer folder in this workspace is excluded from Git and will remain untouched.
-- The installed game at `C:\Games\Stardew Valley` is external to this repository.
-- Game binaries/assets, SMAPI redistributables, model files, secrets, build outputs, and machine-local configuration must not be committed.
+The game executable and original assets were not replaced. The repository ignores the local installer folder, game files, models, build output, secrets, and machine-specific configuration.
 
-## Milestone status
+## Design choices
 
-1. Inspect Stardew and prepare SMAPI development — **complete**; SMAPI launched the game and loaded the mod at the title screen.
-2. Check/install dependencies — **complete**.
-3. Configure Ollama and verify inference — **complete**.
-4. Build NPCBridge — **complete**.
-5. Test NPCBridge over HTTP — **complete**; five automated tests plus live Ollama calls pass.
-6. Create and load basic SMAPI mod — **complete**; confirmed in SMAPI log.
-7. Implement Alt+0 NPC detection — **complete**.
-8. Implement in-game text input — **complete**.
-9. Connect SMAPI to NPCBridge — **complete**.
-10. Connect NPCBridge to Ollama — **complete**.
-11. Return dialogue to Stardew — **implemented; interactive verification pending**.
-12. Complete Abigail end-to-end test — **interactive in-save acceptance test pending**.
-13. Package NPCBridge as a Windows executable — **complete and live-tested**.
+- SMAPI is the only component that reads Stardew state.
+- NPCBridge runs independently and communicates over HTTP/JSON.
+- Model access sits behind an `LlmBackend` interface.
+- Profiles live outside both the mod and model backend.
+- Network work runs asynchronously so Stardew's main thread stays responsive.
+- Results are queued back to the game thread before touching Stardew UI state.
+- Normal Stardew conversations are left alone; generated dialogue uses a separate key.
+- The bridge binds to localhost unless configured otherwise.
 
-## Next actions
+## What has been verified
 
-1. Run `scripts\start-system.ps1`.
-2. Launch SMAPI, load a save, stand beside Abigail or Linus, and complete the documented Alt+0 acceptance test.
+- Six Python tests pass.
+- Source-mode bridge health and conversation requests pass.
+- Packaged `NPCBridge.exe` health and conversation requests pass.
+- Live requests through Ollama return dialogue for Abigail and Linus.
+- The Stardew mod builds in Release mode with no compile errors.
+- SMAPI 4.0.6 launches Stardew 1.6.0 and loads Stardew AI successfully.
+- The mod configuration now uses `LeftAlt + D0`, shown to players as `Alt+0`.
 
-## Verification record
+The mod build reports a Newtonsoft version-resolution warning caused by the older SMAPI/game assembly combination. The mod does not use Newtonsoft directly, and the resulting assembly loads successfully.
 
-- Python tests: 5 passed.
-- Live source bridge health and conversation calls: passed.
-- Live packaged EXE health and conversation calls: passed.
-- C# Release build: passed with zero errors. A Newtonsoft version-resolution warning originates from the pinned legacy build package/game assembly combination and the mod does not directly use Newtonsoft.
-- Initial SMAPI startup verification passed on 2026-08-13 with Stardew AI 0.1.0 and `LeftAlt + D1`. Version 0.1.1 changes the configured input to `LeftAlt + D0` (`Alt+0`).
-- Full in-save UI interaction cannot be automated safely and remains the only acceptance test.
-- Linus was added as the second original external profile to make the first interaction test easier near his mountain tent.
+## Milestones
+
+- [x] Inspect the game installation
+- [x] Install and verify SMAPI 4.0.6
+- [x] Install Python and Ollama
+- [x] Pull and test a small local model
+- [x] Build NPCBridge
+- [x] Add a versioned conversation endpoint
+- [x] Add external profiles for Abigail and Linus
+- [x] Build the SMAPI adapter
+- [x] Add nearest-villager detection
+- [x] Add the in-game text field
+- [x] Connect the mod to the bridge asynchronously
+- [x] Return generated dialogue to Stardew
+- [x] Package NPCBridge as a Windows executable
+- [x] Verify the mod loads through SMAPI
+- [ ] Complete and record a full player-controlled conversation in a loaded save
+
+## Releases
+
+### v0.1.0
+
+First working local prototype. It includes the bridge, Ollama backend, Stardew adapter, Abigail and Linus profiles, packaging scripts, and automated tests. The original conversation key was `Alt+1`.
+
+### v0.1.1
+
+Changed the in-game conversation key to `Alt+0` and updated the installed mod configuration.
+
+Detailed notes for the first snapshot are in `docs/releases/v0.1.0.md`.
+
+## Next work
+
+The next refactor should keep the current network and mod path working while making the bridge protocol fully game-agnostic. The main tasks are:
+
+1. Introduce a generic conversation envelope without silently breaking protocol version 1.
+2. Load profiles by an explicit `profileId`.
+3. Separate persona rules from general knowledge instructions.
+4. Validate structured model output and keep optional emotion metadata.
+5. Add persona regression prompts for normal, technical, hostile, and adversarial messages.
+6. Keep the Stardew menu open in a waiting state so single-player remains paused until the reply is shown.
+
+The current implementation should be treated as the baseline, not replaced wholesale.
