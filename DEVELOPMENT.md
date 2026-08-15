@@ -51,7 +51,7 @@ The game executable and original assets were not replaced. The repository ignore
 
 ## What has been verified
 
-- Twenty Python tests pass.
+- Twenty-one Python tests pass.
 - Source-mode bridge health and conversation requests pass.
 - Packaged `NPCBridge.exe` health and conversation requests pass.
 - Live requests through Ollama return dialogue for Abigail and Linus.
@@ -84,7 +84,7 @@ The mod build reports a Newtonsoft version-resolution warning caused by the olde
 - [x] Keep single-player paused during text input and model generation
 - [x] Persist per-character interaction memory and grudges
 - [x] Apply bounded conversation effects to Stardew friendship
-- [x] Show facial expression and body language with each response
+- [x] Show a facial expression with each response
 - [ ] Complete and record a full player-controlled conversation in a loaded save
 
 ## Releases
@@ -108,6 +108,10 @@ Expanded profiles with unique speech cadence, vocabulary, verbal habits, phrases
 ### v0.3.0
 
 Added persistent per-player relationship memory. Compliments now have diminishing returns, repeated flattery can become uncomfortable, and insults or hostility can create wariness and grudges. Replies include facial expression and body language, while the Stardew adapter applies the returned impact to the NPC's real friendship score.
+
+### v0.3.1
+
+Removed body-language narration from the dialogue box, made facial expressions specific instead of showing neutral defaults, strengthened character reactions to direct insults, and raised the reply limit so detailed answers are possible when appropriate.
 
 Detailed notes for the first snapshot are in `docs/releases/v0.1.0.md`.
 

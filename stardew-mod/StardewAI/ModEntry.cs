@@ -106,13 +106,13 @@ internal sealed class ModEntry : Mod
             if (result is null)
                 throw new InvalidDataException("NPCBridge returned an empty response.");
             this.pendingDialogues.Enqueue(result.Success
-                ? new PendingDialogue(request.Npc.Id, result.Dialogue, result.Emotion, result.FacialExpression, result.BodyLanguage, result.RelationshipDelta, result.RelationshipReason, result.MemoryState, null)
-                : new PendingDialogue(request.Npc.Id, null, null, null, null, 0, null, null, result.Error ?? "NPCBridge could not generate dialogue."));
+                ? new PendingDialogue(request.Npc.Id, result.Dialogue, result.Emotion, result.FacialExpression, result.RelationshipDelta, result.RelationshipReason, result.MemoryState, null)
+                : new PendingDialogue(request.Npc.Id, null, null, null, 0, null, null, result.Error ?? "NPCBridge could not generate dialogue."));
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException or InvalidDataException)
         {
             this.Monitor.Log($"NPCBridge request failed: {ex.Message}", LogLevel.Error);
-            this.pendingDialogues.Enqueue(new PendingDialogue(request.Npc.Id, null, null, null, null, 0, null, null, "AI conversation service is unavailable."));
+            this.pendingDialogues.Enqueue(new PendingDialogue(request.Npc.Id, null, null, null, 0, null, null, "AI conversation service is unavailable."));
         }
     }
 
@@ -135,9 +135,8 @@ internal sealed class ModEntry : Mod
                 Game1.player.changeFriendship(result.RelationshipDelta, npc);
                 this.Monitor.Log($"Relationship changed for {result.NpcId}: {result.RelationshipDelta:+#;-#;0} ({result.RelationshipReason}); memory={result.MemoryState}", LogLevel.Info);
             }
-            string expression = string.IsNullOrWhiteSpace(result.FacialExpression) ? "" : $" Expression: {result.FacialExpression}.";
-            string movement = string.IsNullOrWhiteSpace(result.BodyLanguage) ? "" : $"*{speaker} {result.BodyLanguage}.{expression}*\n";
-            Game1.drawObjectDialogue($"{movement}{speaker}: {result.Dialogue}");
+            string expression = string.IsNullOrWhiteSpace(result.FacialExpression) ? "" : $"*{speaker} wears {result.FacialExpression}.*\n";
+            Game1.drawObjectDialogue($"{expression}{speaker}: {result.Dialogue}");
         }
     }
 }

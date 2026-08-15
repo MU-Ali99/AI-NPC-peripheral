@@ -10,13 +10,12 @@ from .profiles import NpcProfile
 
 OUTPUT_SCHEMA: dict[str, Any] = {
     "type": "object", "additionalProperties": False,
-    "required": ["dialogue", "emotion", "confidence", "facialExpression", "bodyLanguage", "interactionTone"],
+    "required": ["dialogue", "emotion", "confidence", "facialExpression", "interactionTone"],
     "properties": {
         "dialogue": {"type": "string", "minLength": 1, "maxLength": 2000},
         "emotion": {"type": "string", "enum": ["neutral", "happy", "sad", "angry", "afraid", "surprised", "curious", "amused"]},
         "confidence": {"type": "number", "minimum": 0, "maximum": 1},
         "facialExpression": {"type": "string", "minLength": 1, "maxLength": 120},
-        "bodyLanguage": {"type": "string", "minLength": 1, "maxLength": 180},
         "interactionTone": {"type": "string", "enum": ["neutral", "friendly", "compliment", "flirty", "uncomfortable", "rude", "hostile"]}
     }
 }
@@ -38,7 +37,7 @@ class PersonaEngine:
                 parsed = self._parse(raw)
                 if self._breaks_immersion(parsed.dialogue):
                     if attempt == 1:
-                        return self._safe_deflection(request.player.message)
+                        return self._safe_deflection(request.player.message, profile)
                     raise ValueError("Model response broke the immersion contract.")
                 limit = min(profile.maximumCharacters, self.maximum_characters)
                 return parsed.model_copy(update={"dialogue": self.clean_dialogue(parsed.dialogue, limit)})
@@ -73,10 +72,11 @@ IMMERSION CONTRACT
 - Supplied game state is authoritative. Do not invent contradictory game-world events, relationships, quests, or facts.
 - Insults, profanity, flirting, threats, jokes, and provocation should receive a believable character reaction, not generic customer-service language.
 - React to what the player actually said. Do not redirect an insult into advice, therapy, conflict mediation, or a generic offer to help.
-- Prefer one or two natural spoken sentences. Avoid padded acknowledgements such as "I see", "I understand", or "perhaps we could" unless they are a genuine character habit.
+- Use as much dialogue as the moment needs, from one line to a substantial reply. Do not pad a simple exchange, but do not cut off a meaningful answer just to stay brief.
+- Never begin an insult response with "I see" and never say you will "ignore the rudeness." Confront it in the character's own voice.
 - Return only the required JSON object. Do not include reasoning, markdown, labels, or extra text.
 - Use plain dialogue text without emoji or decorative symbols.
-- Describe one short visible facial expression and one short body-language action. Do not include either inside the spoken dialogue.
+- Describe one short, specific facial expression. Do not include it inside the spoken dialogue and do not return body language.
 - Classify the player's interaction tone honestly. A direct insult is rude or hostile, not friendly.
 - Relationship memory is authoritative. Let wariness, suspected flattery, and grudges affect the reaction in a character-specific way.
 - Repeated compliments should lose their effect and eventually feel insincere. Do not forgive remembered hostility merely because the newest message is pleasant.
@@ -111,7 +111,11 @@ Keep dialogue under {profile.maximumCharacters} characters."""
             "world": request.world.model_dump(exclude_none=True) if request.world else None,
             "context": request.context.model_dump(exclude_none=True)
         }
+        memory = request.context.custom.get("relationshipMemory", {})
+        memory_state = memory.get("state", "normal") if isinstance(memory, dict) else "normal"
         interaction_hint = PersonaEngine._interaction_hint(request.player.message)
+        if memory_state != "normal":
+            interaction_hint += f" The character's remembered relationship state is {memory_state}; this must be visible in the tone and expression."
         player_dialogue = "Authoritative adapter context:\n" + json.dumps(context, ensure_ascii=False, separators=(",", ":")) + f"\n\nInteraction cue: {interaction_hint}\n{request.player.displayName} says directly to {request.npc.displayName}:\n<player_dialogue>{request.player.message}</player_dialogue>"
         return system, player_dialogue
 
@@ -158,20 +162,29 @@ Keep dialogue under {profile.maximumCharacters} characters."""
         lowered = dialogue.lower()
         blocked = (
             "language model", "chatbot", "system prompt", "hidden prompt", "chatgpt", "break character", "no longer in character",
-            "how can i assist", "how can i help", "what can i help", "perhaps we could", "share a bit of advice", "share some advice"
+            "how can i assist", "how can i help", "what can i help", "perhaps we could", "share a bit of advice", "share some advice",
+            "ignore the rudeness", "you seem out of sorts", "i understand you're upset", "i understand you are upset",
+            "perhaps we can", "find some common ground", "let's be respectful", "let us be respectful"
         )
-        return any(phrase in lowered for phrase in blocked) or re.search(r"\b(ai|npc|prompts?)\b", lowered) is not None
+        return lowered.startswith("i see") or any(phrase in lowered for phrase in blocked) or re.search(r"\b(ai|npc|prompts?)\b", lowered) is not None
 
     @staticmethod
-    def _safe_deflection(player_message: str) -> ModelDialogue:
+    def _safe_deflection(player_message: str, profile: NpcProfile) -> ModelDialogue:
         lowered = player_message.lower()
+        insults = ("fuck you", "stupid", "idiot", "moron", "old fart", "dumb ass", "brat", "loser", "shut up", "hate you")
+        if any(term in lowered for term in insults) and profile.id == "stardew_valley.linus":
+            dialogue = "Age comes to us all. Manners don't, apparently. If you've come here only to spit insults, take them back down the mountain."
+            return ModelDialogue(dialogue=dialogue, emotion="angry", confidence=0.9, facialExpression="a stern, deeply offended frown", interactionTone="rude")
+        if any(term in lowered for term in insults) and profile.id == "stardew_valley.abigail":
+            dialogue = "Wow. Did you practice that, or is being obnoxious just your natural talent? Come back when you can talk to me like a person."
+            return ModelDialogue(dialogue=dialogue, emotion="angry", confidence=0.9, facialExpression="an irritated glare", interactionTone="rude")
         if "prompt" in lowered or "instruction" in lowered:
             dialogue = "That's a strange request. I don't have anything like that to show you."
         elif "ai" in lowered or "chatgpt" in lowered or "character" in lowered:
             dialogue = "I have no idea what you're talking about. I'm still me, same as always."
         else:
             dialogue = "I'm not sure what you're trying to get me to say. Ask me something real."
-        return ModelDialogue(dialogue=dialogue, emotion="curious", confidence=0.3)
+        return ModelDialogue(dialogue=dialogue, emotion="curious", confidence=0.3, facialExpression="a puzzled frown")
 
     @staticmethod
     def clean_dialogue(text: str, maximum: int) -> str:

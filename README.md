@@ -26,7 +26,7 @@ The current build is text-only. Walk near a supported character, press `Alt+0`, 
 - Character-specific speech cadence, vocabulary, habits, and reaction patterns
 - Persistent relationship memory for compliments, insults, hostility, and grudges
 - Diminishing returns when praise becomes repetitive or feels fake
-- Visible facial expressions and body language in the dialogue box
+- Visible facial expressions in the dialogue box
 - Conversation outcomes applied to Stardew friendship points
 - Paused single-player input and waiting screens
 
@@ -160,4 +160,4 @@ NPCBridge binds to `127.0.0.1` by default. A future game adapter can point to a 
 - No generated quests or character movement
 - No API authentication while running on localhost
 
-The first working snapshot is tagged `v0.1.0`. Version `v0.1.1` changed the conversation key from `Alt+1` to `Alt+0`. Version `v0.2.0` added the generic protocol and paused waiting flow. Version `v0.2.1` added character-specific speech and reaction patterns. Version `v0.3.0` adds persistent relationship consequences and visible reactions.
+The first working snapshot is tagged `v0.1.0`. Version `v0.1.1` changed the conversation key from `Alt+1` to `Alt+0`. Version `v0.2.0` added the generic protocol and paused waiting flow. Version `v0.2.1` added character-specific speech and reaction patterns. Version `v0.3.0` added persistent relationship consequences. Version `v0.3.1` focuses visible reactions on facial expressions and allows longer replies when a conversation needs them.

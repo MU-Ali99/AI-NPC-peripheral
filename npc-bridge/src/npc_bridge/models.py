@@ -86,7 +86,6 @@ class ConversationResponseV2(StrictModel):
     emotion: str | None = None
     confidence: float | None = Field(default=None, ge=0, le=1)
     facialExpression: str | None = None
-    bodyLanguage: str | None = None
     relationshipDelta: int = Field(default=0, ge=-100, le=100)
     relationshipReason: str | None = None
     memoryState: str | None = None
@@ -99,5 +98,4 @@ class ModelDialogue(BaseModel):
     emotion: Literal["neutral", "happy", "sad", "angry", "afraid", "surprised", "curious", "amused"] = "neutral"
     confidence: float = Field(default=0.7, ge=0, le=1)
     facialExpression: str = Field(default="neutral", min_length=1, max_length=120)
-    bodyLanguage: str = Field(default="stands naturally", min_length=1, max_length=180)
     interactionTone: Literal["neutral", "friendly", "compliment", "flirty", "uncomfortable", "rude", "hostile"] = "neutral"

@@ -170,6 +170,17 @@ def test_repeated_immersion_break_uses_safe_deflection() -> None:
     assert backend.calls == 2
 
 
+def test_generic_insult_reply_falls_back_to_character_voice() -> None:
+    backend = FakeBackend([json.dumps({"dialogue": "I see you've got some strong feelings today."})])
+    payload = request_v2()
+    payload["npc"] = {"id": "Linus", "displayName": "Linus", "profileId": "stardew_valley.linus"}
+    payload["player"]["message"] = "You're an old fart and a dumb ass."
+    response = TestClient(create_app(settings(), backend)).post("/v2/conversation", json=payload).json()
+    assert "Manners don't" in response["dialogue"]
+    assert response["facialExpression"] == "a stern, deeply offended frown"
+    assert response["relationshipDelta"] == -12
+
+
 def test_repeated_malformed_output_fails_cleanly() -> None:
     response = TestClient(create_app(settings(), FakeBackend(["not json"]))).post("/v2/conversation", json=request_v2())
     assert response.json()["success"] is False
@@ -222,7 +233,7 @@ def test_repeated_hostility_creates_persistent_grudge() -> None:
     assert second["memoryState"] == "holding_a_grudge"
 
 
-def test_response_contains_visible_reaction_fields() -> None:
+def test_response_contains_a_specific_facial_expression_without_body_language() -> None:
     response = TestClient(create_app(settings(), FakeBackend())).post("/v2/conversation", json=request_v2()).json()
-    assert response["facialExpression"] == "neutral"
-    assert response["bodyLanguage"] == "stands naturally"
+    assert response["facialExpression"] == "a calm, observant expression"
+    assert "bodyLanguage" not in response

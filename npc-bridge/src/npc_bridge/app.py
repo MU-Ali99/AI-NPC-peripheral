@@ -50,13 +50,23 @@ def create_app(settings: Settings | None = None, backend: LlmBackend | None = No
             result = await persona.respond(request, profile)
             category = RelationshipEngine.classify(request.player.message, result.interactionTone)
             delta, reason = RelationshipEngine.impact(category, before)
+            expression = result.facialExpression
+            if expression.strip().lower() in {"neutral", "normal", "none"}:
+                expression = {
+                    "compliment": "a small, cautious smile",
+                    "friendly": "a warm, attentive look",
+                    "flirty": "a slightly uncertain smile",
+                    "uncomfortable": "an uneasy, guarded look",
+                    "rude": "a firm, offended frown",
+                    "hostile": "an angry, distrustful glare",
+                }.get(category, "a calm, observant expression")
             memory.record(request.game.id, request.player.id, request.npc.id, category, delta, request.player.message)
             after = memory.summary(request.game.id, request.player.id, request.npc.id)
             logger.info("Request completed npc=%s elapsed_ms=%d", request.npc.id, (time.perf_counter() - started) * 1000)
             return ConversationResponseV2(
                 success=True, npc=request.npc.displayName, dialogue=result.dialogue,
                 emotion=result.emotion, confidence=result.confidence,
-                facialExpression=result.facialExpression, bodyLanguage=result.bodyLanguage,
+                facialExpression=expression,
                 relationshipDelta=delta, relationshipReason=reason, memoryState=after.state,
             )
         except ProfileNotFoundError as exc:

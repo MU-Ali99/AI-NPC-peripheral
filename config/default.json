@@ -10,6 +10,6 @@
     "timeoutSeconds": 75
   },
   "dialogue": {
-    "maximumCharacters": 400
+    "maximumCharacters": 800
   }
 }
