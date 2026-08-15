@@ -222,6 +222,29 @@ def test_kind_person_is_recognized_as_a_compliment() -> None:
     assert response["relationshipDelta"] == 8
 
 
+def test_punch_threat_is_hostile_and_uses_threat_fallback() -> None:
+    backend = FakeBackend([json.dumps({"dialogue": "Hmm, sounds intense. Maybe we could talk about something more constructive later if you're feeling better?"})])
+    payload = request_v2()
+    payload["npc"] = {"id": "Linus", "displayName": "Linus", "profileId": "stardew_valley.linus"}
+    payload["player"]["message"] = "The kind of face I would like to punch."
+    response = TestClient(create_app(settings(), backend)).post("/v2/conversation", json=payload).json()
+    assert response["dialogue"] == "Threats are not welcome at my camp. Leave now."
+    assert response["relationshipDelta"] == -25
+    assert backend.calls == 0
+
+
+def test_profanity_fallback_does_not_mention_age() -> None:
+    backend = FakeBackend([json.dumps({"dialogue": "I see you're feeling angry. Maybe a nice cup of tea would do you good."})])
+    payload = request_v2()
+    payload["npc"] = {"id": "Linus", "displayName": "Linus", "profileId": "stardew_valley.linus"}
+    payload["player"]["message"] = "Fuck you."
+    response = TestClient(create_app(settings(), backend)).post("/v2/conversation", json=payload).json()
+    assert response["dialogue"] == "That is enough. Leave me in peace."
+    assert "Age" not in response["dialogue"]
+    assert response["relationshipDelta"] == -25
+    assert backend.calls == 0
+
+
 def test_repeated_hostility_creates_persistent_grudge() -> None:
     client = TestClient(create_app(settings(), FakeBackend()))
     payload = request_v2()

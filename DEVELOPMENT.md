@@ -51,7 +51,7 @@ The game executable and original assets were not replaced. The repository ignore
 
 ## What has been verified
 
-- Twenty-one Python tests pass.
+- Twenty-three Python tests pass.
 - Source-mode bridge health and conversation requests pass.
 - Packaged `NPCBridge.exe` health and conversation requests pass.
 - Live requests through Ollama return dialogue for Abigail and Linus.
@@ -128,6 +128,10 @@ Removed an over-broad SMAPI input suppression hook that also swallowed Enter and
 ### v0.3.5
 
 Expanded the insult-response quality gate after the local model answered “handsome old fart” with an offer of tea and quiet time. Counseling and comforting language is now rejected during direct insults.
+
+### v0.3.6
+
+Added deterministic threat detection and context-aware fallback reactions. Threats, profanity, age insults, ordinary insults, and remembered grudges now produce different responses instead of sharing one fixed line.
 
 Detailed notes for the first snapshot are in `docs/releases/v0.1.0.md`.
 

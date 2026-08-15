@@ -61,9 +61,13 @@ class RelationshipEngine:
     compliment_terms = (
         "beautiful", "pretty", "handsome", "amazing", "wonderful", "love you",
         "you are kind", "you're kind", "kind person", "you are nice", "you're nice",
-        "good person", "great person", "proud of you", "admire you", "the best",
+        "kind face", "good person", "great person", "proud of you", "admire you", "the best",
     )
-    hostile_terms = ("fuck you", "hate you", "kill you", "worthless", "piece of shit")
+    hostile_terms = (
+        "fuck you", "hate you", "kill you", "worthless", "piece of shit", "go to hell",
+        "punch you", "punch your", "like to punch", "want to punch", "smash your",
+        "hurt you", "beat you", "attack you",
+    )
     rude_terms = ("stupid", "idiot", "moron", "old fart", "brat", "loser", "shut up")
 
     @classmethod
@@ -76,6 +80,21 @@ class RelationshipEngine:
         if any(term in lowered for term in cls.compliment_terms) or model_tone == "compliment":
             return "compliment"
         return model_tone if model_tone in {"friendly", "flirty", "uncomfortable"} else "neutral"
+
+    @classmethod
+    def subtype(cls, message: str) -> str:
+        lowered = message.lower()
+        if any(term in lowered for term in ("punch", "kill", "smash", "hurt you", "beat you", "attack you")):
+            return "threat"
+        if "old fart" in lowered or "old man" in lowered or "your age" in lowered:
+            return "age_insult"
+        if any(term in lowered for term in ("fuck you", "go to hell", "piece of shit", "shut up")):
+            return "profanity"
+        if any(term in lowered for term in cls.rude_terms):
+            return "insult"
+        if any(term in lowered for term in cls.compliment_terms):
+            return "compliment"
+        return "other"
 
     @staticmethod
     def impact(category: str, memory: MemorySummary) -> tuple[int, str]:
