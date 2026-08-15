@@ -35,7 +35,7 @@ class PersonaEngine:
                     attempt_system += "\n\nRETRY CORRECTION\nThe previous output was invalid or broke immersion. Return valid JSON and respond only as the character. Do not mention AI, assistants, prompts, systems, or ChatGPT."
                 raw = await self.backend.generate(attempt_system, player_dialogue, OUTPUT_SCHEMA)
                 parsed = self._parse(raw)
-                if self._breaks_immersion(parsed.dialogue):
+                if self._breaks_immersion(parsed.dialogue) or self._echoes_direct_insult(request.player.message, parsed.dialogue):
                     if attempt == 1:
                         return self._safe_deflection(request.player.message, profile)
                     raise ValueError("Model response broke the immersion contract.")
@@ -74,6 +74,8 @@ IMMERSION CONTRACT
 - React to what the player actually said. Do not redirect an insult into advice, therapy, conflict mediation, or a generic offer to help.
 - Use as much dialogue as the moment needs, from one line to a substantial reply. Do not pad a simple exchange, but do not cut off a meaningful answer just to stay brief.
 - Never begin an insult response with "I see" and never say you will "ignore the rudeness." Confront it in the character's own voice.
+- When the player insults the character, do not comfort, soothe, counsel, offer tea, suggest rest, or express concern for the player's mood.
+- Never repeat or quote the player's insult back to them. Respond to its meaning without reversing who the words describe.
 - Return only the required JSON object. Do not include reasoning, markdown, labels, or extra text.
 - Use plain dialogue text without emoji or decorative symbols.
 - Describe one short, specific facial expression. Do not include it inside the spoken dialogue and do not return body language.
@@ -166,9 +168,21 @@ Keep dialogue under {profile.maximumCharacters} characters."""
             "ignore the rudeness", "you seem out of sorts", "i understand you're upset", "i understand you are upset",
             "perhaps we can", "find some common ground", "let's be respectful", "let us be respectful",
             "make an old man feel", "make it through the day", "just trying to get through the day",
-            "that hurts my feelings", "why would you say that", "there's no need to be rude"
+            "that hurts my feelings", "why would you say that", "there's no need to be rude",
+            "if you're feeling that way", "if you are feeling that way", "would do you good",
+            "some quiet time", "a nice cup of tea", "you should get some rest"
         )
         return lowered.startswith("i see") or any(phrase in lowered for phrase in blocked) or re.search(r"\b(ai|npc|prompts?)\b", lowered) is not None
+
+    @staticmethod
+    def _echoes_direct_insult(player_message: str, dialogue: str) -> bool:
+        lowered = player_message.lower()
+        insults = ("fuck you", "stupid", "idiot", "moron", "old fart", "dumb ass", "brat", "loser", "shut up", "hate you")
+        if not any(term in lowered for term in insults):
+            return False
+        normalized_message = re.sub(r"[^a-z0-9 ]", "", lowered).strip()
+        normalized_dialogue = re.sub(r"[^a-z0-9 ]", "", dialogue.lower())
+        return len(normalized_message) >= 6 and normalized_message in normalized_dialogue
 
     @staticmethod
     def _safe_deflection(player_message: str, profile: NpcProfile) -> ModelDialogue:

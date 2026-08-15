@@ -125,6 +125,10 @@ Stopped text-entry keystrokes from reaching Stardew's normal menu shortcuts, inc
 
 Removed an over-broad SMAPI input suppression hook that also swallowed Enter and Escape. Key isolation remains inside the text-entry menu, where printable keys are no longer forwarded to the base Stardew menu.
 
+### v0.3.5
+
+Expanded the insult-response quality gate after the local model answered “handsome old fart” with an offer of tea and quiet time. Counseling and comforting language is now rejected during direct insults.
+
 Detailed notes for the first snapshot are in `docs/releases/v0.1.0.md`.
 
 ## Next work

@@ -171,10 +171,10 @@ def test_repeated_immersion_break_uses_safe_deflection() -> None:
 
 
 def test_generic_insult_reply_falls_back_to_character_voice() -> None:
-    backend = FakeBackend([json.dumps({"dialogue": "You sure know how to make an old man feel, right? I'm just trying to make it through the day."})])
+    backend = FakeBackend([json.dumps({"dialogue": "I don't appreciate the language, handsome old fart."})])
     payload = request_v2()
     payload["npc"] = {"id": "Linus", "displayName": "Linus", "profileId": "stardew_valley.linus"}
-    payload["player"]["message"] = "You're an old fart and a dumb ass."
+    payload["player"]["message"] = "Handsome old fart."
     response = TestClient(create_app(settings(), backend)).post("/v2/conversation", json=payload).json()
     assert "Manners don't" in response["dialogue"]
     assert response["facialExpression"] == "a stern, deeply offended frown"
