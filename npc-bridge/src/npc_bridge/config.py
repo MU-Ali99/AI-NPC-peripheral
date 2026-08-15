@@ -18,7 +18,7 @@ class Settings:
     bridge_host: str = "127.0.0.1"
     bridge_port: int = 8765
     ollama_endpoint: str = "http://127.0.0.1:11434"
-    ollama_model: str = "gemma3:4b"
+    ollama_model: str = "qwen3:4b-instruct-2507-q4_K_M"
     ollama_timeout_seconds: float = 75
     maximum_characters: int = 400
     profiles_path: Path = project_root() / "npc-profiles"

@@ -26,7 +26,7 @@ The game adapter and dialogue service are separate on purpose. The mod gathers g
 - .NET SDK: `10.0.203`
 - Python: `3.12.10`
 - Ollama: `0.32.9`
-- Model: `gemma3:4b` (selected for substantially better character acting on this 8 GB system)
+- Model: `qwen3:4b-instruct-2507-q4_K_M` (selected for stronger instruction following, recall, and hostile-stage variation on this 8 GB system)
 
 SMAPI 4.0.6 is intentionally pinned because the game is staying on 1.6.0. The official SMAPI installer payload was downloaded from its GitHub release. Its SHA-256 was:
 
@@ -137,6 +137,10 @@ Added deterministic threat detection and context-aware fallback reactions. Threa
 ### v0.4.0
 
 Removed the bridge's phrase dictionaries and scripted NPC replies. The model now owns interpretation and acting, while NPCBridge owns profiles, recent completed dialogue, persistent 0–1000 scores, configurable sentiment deltas, migrations, and transaction safety. Gemma 3 4B replaced Qwen 2.5 3B after a fixed local comparison showed much stronger in-character replies, at the cost of slower CPU inference.
+
+### v0.4.1
+
+Replaced Gemma 3 4B with the non-thinking Qwen 3 4B Instruct 2507 release. Added distinct acting direction for every relationship stage and quality checks against terse or repeated dialogue. Local packaged tests showed stronger confrontation and exact recall, though positive-stage differences remain subtler than hostile-stage differences and CPU responses commonly take 30–40 seconds.
 
 Detailed notes for the first snapshot are in `docs/releases/v0.1.0.md`.
 

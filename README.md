@@ -17,7 +17,7 @@ The current build is text-only. Walk near a supported character, press `Alt+0`, 
 - Non-blocking HTTP requests while the model generates a reply
 - Player, relationship, location, date, time, and weather context
 - Abigail and Linus character profiles
-- Local inference through Ollama and `gemma3:4b`
+- Local inference through Ollama and `qwen3:4b-instruct-2507-q4_K_M`
 - Python source mode and a packaged `NPCBridge.exe`
 - Request validation, timeouts, readable errors, and automated tests
 - Generic protocol v2 with protocol v1 compatibility
@@ -54,7 +54,7 @@ The prototype was built and tested with:
 - .NET SDK 10, targeting .NET 6 for the mod
 - Python 3.12
 - Ollama 0.32.9
-- `gemma3:4b`
+- `qwen3:4b-instruct-2507-q4_K_M`
 
 SMAPI is pinned to 4.0.6 because newer releases require a newer Stardew Valley version.
 
@@ -161,4 +161,4 @@ NPCBridge binds to `127.0.0.1` by default. A future game adapter can point to a 
 - No generated quests or character movement
 - No API authentication while running on localhost
 
-The first working snapshot is tagged `v0.1.0`. Version `v0.4.0` moves language judgment into the model and makes NPCBridge the transactional owner of scores and conversation history. Earlier release details are kept in `docs/releases`.
+The first working snapshot is tagged `v0.1.0`. Version `v0.4.0` moves language judgment into the model and makes NPCBridge the transactional owner of scores and conversation history. Version `v0.4.1` changes the model and makes relationship stages explicit acting directions. Earlier release details are kept in `docs/releases`.

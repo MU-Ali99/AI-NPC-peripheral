@@ -94,6 +94,11 @@ def test_stale_concurrent_result_is_superseded() -> None:
 def test_relationship_thresholds(score: int,state: str)->None:
     assert relationship_state(score)==state
 
+def test_each_relationship_state_has_distinct_acting_direction() -> None:
+    from npc_bridge.persona import RELATIONSHIP_ACTING
+    assert set(RELATIONSHIP_ACTING)=={"VERY_CLOSE","TRUSTING","WARM","FRIENDLY","NEUTRAL","ANNOYED","OFFENDED","VERY_NEGATIVE","HOSTILE"}
+    assert len(set(RELATIONSHIP_ACTING.values()))==9
+
 def test_prompt_has_profile_state_and_no_keyword_classifier() -> None:
     request=ConversationRequestV2.model_validate(payload("You old fart."))
     profile=ProfileStore(settings().profiles_path).load("stardew_valley.linus")

@@ -15,7 +15,19 @@ OUTPUT_SCHEMA: dict[str,Any] = {
     "properties":{
         "dialogue":{"type":"string","minLength":1,"maxLength":2000},
         "sentiment":{"type":"string","enum":["POSITIVE","NEUTRAL","NEGATIVE"]},
-        "facialExpression":{"type":"string","minLength":1,"maxLength":120}}}
+    "facialExpression":{"type":"string","minLength":1,"maxLength":120}}}
+
+RELATIONSHIP_ACTING = {
+    "VERY_CLOSE": "Deep bond. Make the difference unmistakable: recognize the player as personally important, respond with affection and familiarity, and share a sincere private feeling or vulnerability that you would never offer a stranger.",
+    "TRUSTING": "Established trust. Welcome the player personally, speak candidly, and volunteer a meaningful thought or confidence rather than giving a generic polite reply.",
+    "WARM": "Growing affection. Show clear pleasure at this player's words, refer to the comfortable familiarity between you, and respond more personally than at FRIENDLY or NEUTRAL.",
+    "FRIENDLY": "Positive familiarity. Be approachable and pleased to talk, but keep intimacy and private feelings restrained.",
+    "NEUTRAL": "Ordinary acquaintance. Be civil but reserved. Accept kindness politely without implying a bond, special trust, affection, or shared history.",
+    "ANNOYED": "Patience is thinning. Make the cooler tone observable: be guarded and brief, question the player's behavior, and withhold ordinary warmth without acting fully hostile.",
+    "OFFENDED": "Trust has been damaged. Name the disrespect or damaged trust directly, reject deflection, and set a firm boundary. Do not turn the response into a proverb, lesson, or unrelated observation.",
+    "VERY_NEGATIVE": "Repeated harm is established. Explicitly treat this as a pattern, not one isolated remark; reject normal friendly conversation and demand distance or meaningful change before continuing.",
+    "HOSTILE": "Trust is exhausted. Refuse normal conversation, demand that the player leave or stay away, and make clear that reconciliation will not happen from one pleasant sentence.",
+}
 
 class PersonaEngine:
     def __init__(self, backend: LlmBackend, maximum_characters: int):
@@ -55,6 +67,7 @@ Return exactly the required JSON object."""
                      relationship: RelationshipSnapshot|None=None, history: list[HistoryTurn]|None=None) -> tuple[str,str]:
         relationship=relationship or RelationshipSnapshot(500,"NEUTRAL",0,0)
         history=history or []
+        acting_guidance=RELATIONSHIP_ACTING.get(relationship.state,RELATIONSHIP_ACTING["NEUTRAL"])
         persona = {
             "identity": profile.identity.model_dump(),
             "personality": profile.personality.model_dump(),
@@ -69,6 +82,8 @@ Rules:
 - Never call yourself an AI, assistant, NPC, model, simulation, or fictional character.
 - Respond specifically and naturally in this character's unique voice.
 - The current relationship is {relationship.state} ({relationship.score}/1000). Let it affect warmth, patience, and trust.
+- Mandatory relationship-stage acting direction: {acting_guidance}
+- The stage must be recognizable from the dialogue itself without seeing the numeric score. Do not give the same style of answer at different stages.
 - Relationship state affects the reply, but NEVER changes the sentiment judgment. Sentiment describes only the current message.
 - Use recent completed conversations as memory. Do not invent conversations that are not supplied.
 - Never copy a recent NPC reply. Continue the exchange with new wording and information.
