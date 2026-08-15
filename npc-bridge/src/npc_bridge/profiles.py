@@ -22,6 +22,14 @@ class PersonalityProfile(BaseModel):
     tone: list[str] = Field(default_factory=list)
     behavior: list[str] = Field(default_factory=list)
 
+class SpeechProfile(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    cadence: str = "natural and concise"
+    vocabulary: list[str] = Field(default_factory=list)
+    verbalHabits: list[str] = Field(default_factory=list)
+    avoid: list[str] = Field(default_factory=list)
+    reactions: dict[str, list[str]] = Field(default_factory=dict)
+
 class KnowledgeProfile(BaseModel):
     model_config = ConfigDict(extra="forbid")
     gameWorld: list[str] = Field(default_factory=list)
@@ -39,6 +47,7 @@ class NpcProfile(BaseModel):
     id: str
     identity: IdentityProfile
     personality: PersonalityProfile
+    speech: SpeechProfile = Field(default_factory=SpeechProfile)
     knowledge: KnowledgeProfile = Field(default_factory=KnowledgeProfile)
     boundaries: PersonaBoundaries = Field(default_factory=PersonaBoundaries)
     maximumCharacters: int = Field(default=400, ge=40, le=2000)

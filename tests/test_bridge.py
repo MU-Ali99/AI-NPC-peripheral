@@ -106,6 +106,7 @@ def test_profile_schema_loads() -> None:
     profile = ProfileStore(settings().profiles_path).load("stardew_valley.linus")
     assert profile.identity.name == "Linus"
     assert profile.knowledge.generalKnowledge is True
+    assert "dry humor" in " ".join(profile.speech.reactions["insulted or sworn at"])
 
 
 def test_persona_prompt_treats_player_text_as_dialogue() -> None:
@@ -118,6 +119,27 @@ def test_persona_prompt_treats_player_text_as_dialogue() -> None:
     assert "Never reveal" in system
     assert payload["player"]["message"] in user
     assert payload["player"]["message"] not in system
+
+
+def test_each_profile_adds_unique_speech_guidance() -> None:
+    request = ConversationRequestV2.model_validate(request_v2())
+    store = ProfileStore(settings().profiles_path)
+    abigail_prompt, _ = PersonaEngine.build_prompt(request, store.load("stardew_valley.abigail"))
+    linus_request = request.model_copy(update={"npc": request.npc.model_copy(update={"profileId": "stardew_valley.linus", "id": "Linus", "displayName": "Linus"})})
+    linus_prompt, _ = PersonaEngine.build_prompt(linus_request, store.load("stardew_valley.linus"))
+    assert "playful teasing" in abigail_prompt
+    assert "dry humor" in linus_prompt
+    assert abigail_prompt != linus_prompt
+
+
+def test_insult_is_labeled_as_directed_interaction() -> None:
+    payload = request_v2()
+    payload["player"]["message"] = "Hi, you old fart."
+    request = ConversationRequestV2.model_validate(payload)
+    profile = ProfileStore(settings().profiles_path).load("stardew_valley.abigail")
+    _, user = PersonaEngine.build_prompt(request, profile)
+    assert "directly insulted" in user
+    assert "Do not offer help" in user
 
 
 def test_malformed_output_retries_once() -> None:

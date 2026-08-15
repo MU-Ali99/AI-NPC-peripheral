@@ -49,7 +49,7 @@ The game executable and original assets were not replaced. The repository ignore
 
 ## What has been verified
 
-- Fourteen Python tests pass.
+- Sixteen Python tests pass.
 - Source-mode bridge health and conversation requests pass.
 - Packaged `NPCBridge.exe` health and conversation requests pass.
 - Live requests through Ollama return dialogue for Abigail and Linus.
@@ -95,6 +95,10 @@ Changed the in-game conversation key to `Alt+0` and updated the installed mod co
 ### v0.2.0
 
 Introduced the game-agnostic v2 envelope, explicit profile IDs, optional context fields, a dedicated PersonaEngine, structured-output validation with a compatible JSON fallback, injection checks, persona regression tooling, and a paused Stardew waiting menu. Protocol v1 remains available for older adapters.
+
+### v0.2.1
+
+Expanded profiles with unique speech cadence, vocabulary, verbal habits, phrases to avoid, and situation-specific reactions. Added interaction classification for insults and prompt-injection attempts, plus guards against generic assistant and counselor phrasing.
 
 Detailed notes for the first snapshot are in `docs/releases/v0.1.0.md`.
 

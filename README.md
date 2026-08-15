@@ -23,6 +23,7 @@ The current build is text-only. Walk near a supported character, press `Alt+0`, 
 - Generic protocol v2 with protocol v1 compatibility
 - Structured dialogue output with emotion metadata and safe fallback handling
 - Persona regression checks for normal, technical, hostile, and adversarial messages
+- Character-specific speech cadence, vocabulary, habits, and reaction patterns
 - Paused single-player input and waiting screens
 
 ## Project layout
@@ -154,4 +155,4 @@ NPCBridge binds to `127.0.0.1` by default. A future game adapter can point to a 
 - No generated quests or character movement
 - No API authentication while running on localhost
 
-The first working snapshot is tagged `v0.1.0`. Version `v0.1.1` changed the conversation key from `Alt+1` to `Alt+0`. Version `v0.2.0` adds the generic protocol, stronger persona handling, structured output validation, and paused waiting flow.
+The first working snapshot is tagged `v0.1.0`. Version `v0.1.1` changed the conversation key from `Alt+1` to `Alt+0`. Version `v0.2.0` added the generic protocol and paused waiting flow. Version `v0.2.1` adds character-specific speech and reaction patterns.
