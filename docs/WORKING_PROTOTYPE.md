@@ -19,10 +19,10 @@ No cloud AI service is required. Stardew Valley, NPCBridge, Ollama, the model, c
 
 ## Demonstration setup
 
-- Stardew Valley 1.6.0
-- SMAPI 4.0.6
+- Stardew Valley
+- SMAPI
 - NPCBridge 0.4.2
-- Ollama 0.32.9
+- Ollama
 - `qwen3:4b-instruct-2507-q4_K_M`
 - Supported characters: Linus and Abigail
 - Conversation key: `Alt+0`

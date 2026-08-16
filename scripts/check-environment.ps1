@@ -6,8 +6,8 @@ $checks = @(
 )
 if (-not [string]::IsNullOrWhiteSpace($GamePath)) {
     $checks = @(
-        @{ Name = 'Stardew Valley 1.6.0'; Path = (Join-Path $GamePath 'Stardew Valley.exe') },
-        @{ Name = 'SMAPI 4.0.6'; Path = (Join-Path $GamePath 'StardewModdingAPI.exe') }
+        @{ Name = 'Stardew Valley'; Path = (Join-Path $GamePath 'Stardew Valley.exe') },
+        @{ Name = 'SMAPI'; Path = (Join-Path $GamePath 'StardewModdingAPI.exe') }
     ) + $checks
 } else {
     Write-Warning 'Set STARDEW_GAME_PATH or pass -GamePath to check Stardew Valley and SMAPI.'

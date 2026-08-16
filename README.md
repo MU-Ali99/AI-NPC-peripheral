@@ -4,6 +4,8 @@
 
 AI.N.PC is a local prototype that lets you type freely to game characters and get an AI-generated reply. Stardew Valley is the first game we connected, but the AI service is separate so another game—or another computer—can use it later.
 
+AI.N.PC is an unofficial fan-made prototype and is not affiliated with or endorsed by ConcernedApe. Stardew Valley and its related names and assets belong to their respective owners. No game files are included in this repository.
+
 ```text
 Stardew Valley -> SMAPI mod -> NPCBridge -> Ollama
 ```
@@ -29,17 +31,15 @@ The current demo, including examples and honest limitations, is recorded in [Wor
 
 ## What you need
 
-This version was tested with:
+You will need:
 
-- Windows 11
-- Stardew Valley 1.6.0
-- SMAPI 4.0.6
-- .NET SDK 10, building the mod for .NET 6
-- Python 3.12
-- Ollama 0.32.9
+- Windows
+- Stardew Valley
+- SMAPI
+- The .NET SDK
+- Python
+- Ollama
 - `qwen3:4b-instruct-2507-q4_K_M`
-
-SMAPI stays on 4.0.6 because newer versions expect a newer Stardew Valley release.
 
 ## Running the demo
 
@@ -164,4 +164,3 @@ The working demo is v0.4.2. Earlier changes are listed under `docs/releases`.
 - If the mod cannot build or install, check that `STARDEW_GAME_PATH` points to the folder containing the game executable.
 - If a character is rejected, remember that only Abigail and Linus have profiles right now.
 - The first reply is slower because Ollama may need to load the model into memory.
-- Keep SMAPI at 4.0.6 while using Stardew Valley 1.6.0.

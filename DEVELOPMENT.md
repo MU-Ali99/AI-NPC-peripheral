@@ -25,16 +25,14 @@ Keeping those jobs separate makes the project easier to debug. It also means a f
 
 ## Current local setup
 
-- Stardew Valley 1.6.0
-- SMAPI 4.0.6
-- .NET SDK 10 with a .NET 6 mod target
-- Python 3.12
-- Ollama 0.32.9
+- Stardew Valley
+- SMAPI
+- The .NET SDK
+- Python
+- Ollama
 - `qwen3:4b-instruct-2507-q4_K_M`
 
 The repository does not store or assume a local game installation location. Build and install scripts read it from `STARDEW_GAME_PATH`, and the installer also accepts `-GamePath`.
-
-SMAPI 4.0.6 is intentional. The game is staying on version 1.6.0, and newer SMAPI releases expect a newer game version.
 
 ## Main decisions
 
@@ -58,7 +56,7 @@ SMAPI 4.0.6 is intentional. The game is staying on version 1.6.0, and newer SMAP
 - The packaged `NPCBridge.exe` works.
 - Abigail and Linus both return local model dialogue.
 - The Stardew mod builds in Release mode.
-- SMAPI loads the mod on Stardew Valley 1.6.0.
+- SMAPI loads the mod successfully.
 - The conversation key is `Alt+0`.
 - Enter sends a message and Escape cancels cleanly.
 - Protocol v1 and v2 both work.
@@ -69,7 +67,7 @@ The old SMAPI and game assemblies produce a Newtonsoft version warning during th
 
 ## Finished milestones
 
-- Installed and checked SMAPI 4.0.6
+- Installed and checked SMAPI
 - Set up Python and Ollama
 - Tested local models and selected Qwen 3 4B Instruct
 - Built the standalone bridge
