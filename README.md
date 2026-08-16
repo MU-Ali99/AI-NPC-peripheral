@@ -1,4 +1,4 @@
-![AI.N.PC — The Next Bridge](docs/assets/branding/github-cover-purple.png)
+![AI.N.PC — The Next Bridge](docs/assets/branding/github-cover-current.png)
 
 # AI.N.PC — The Next Bridge
 
@@ -13,6 +13,18 @@ Stardew Valley -> SMAPI mod -> NPCBridge -> Ollama
 Right now the project is text-only. Walk close to a supported character, press `Alt+0`, type something, and the answer appears in a normal Stardew dialogue box.
 
 The current demo, including examples and honest limitations, is recorded in [Working Prototype Snapshot](docs/WORKING_PROTOTYPE.md).
+
+## Project trajectory
+
+![AI.N.PC project architecture and development trajectory](docs/assets/architecture/project-trajectory.png)
+
+The full architecture diagram for AI.N.PC represents the idea behind the project and the direction of development. Some parts describe the working prototype, while others show the system we are building toward.
+
+The project is currently about 80% of the way to its intended prototype goal. The complete conversation loop already works on a local machine: the game adapter gathers context, NPCBridge manages character profiles and relationship memory, and a local language model generates the response.
+
+For now, every part runs on the same computer. This is mainly because of budget limits, and the current hardware also limits model speed and how far the prototype can be tested. The remaining goal is to move the bridge and AI workload onto a separate physical peripheral, such as a Raspberry Pi-class device or another suitable small computer.
+
+Once that hardware limitation is removed, the bridge can be tested as the independent gaming peripheral originally planned. That is the final major step toward the full prototype. The exact device and completion date will depend on budget, model performance, and hardware testing.
 
 ## What works today
 
