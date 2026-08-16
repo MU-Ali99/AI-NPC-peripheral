@@ -1,4 +1,6 @@
-# AI NPC Peripheral
+![AI.N.PC — The Next Bridge](docs/assets/ai-npc-github-cover.png)
+
+# AI.N.PC — The Next Bridge
 
 This is a local prototype for talking to game characters through a language model. Stardew Valley is the first game adapter, but the bridge runs as a separate service so it can later move to another PC or a dedicated device.
 
@@ -7,6 +9,8 @@ Stardew Valley -> SMAPI mod -> NPCBridge -> Ollama
 ```
 
 The current build is text-only. Walk near a supported character, press `Alt+0`, type a message, and the reply is shown in a Stardew dialogue box.
+
+For a repeatable demonstration, observed use cases, and an honest record of the current limitations, see [Working Prototype Snapshot](docs/WORKING_PROTOTYPE.md).
 
 ## What works
 

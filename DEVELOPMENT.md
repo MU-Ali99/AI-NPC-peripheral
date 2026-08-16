@@ -1,6 +1,6 @@
 # Development Notes
 
-Last updated: 2026-08-15
+Last updated: 2026-08-16
 
 ## Goal
 
@@ -52,7 +52,7 @@ The game executable and original assets were not replaced. The repository ignore
 
 ## What has been verified
 
-- Twenty-one Python tests pass.
+- Twenty-five Python tests pass.
 - Source-mode bridge health and conversation requests pass.
 - Packaged `NPCBridge.exe` health and conversation requests pass.
 - Live requests through Ollama return dialogue for Abigail and Linus.
@@ -86,7 +86,7 @@ The mod build reports a Newtonsoft version-resolution warning caused by the olde
 - [x] Persist per-character interaction memory and grudges
 - [x] Apply bounded conversation effects to Stardew friendship
 - [x] Show a facial expression with each response
-- [ ] Complete and record a full player-controlled conversation in a loaded save
+- [x] Complete and record a full player-controlled conversation in a loaded save
 
 ## Releases
 
@@ -150,4 +150,6 @@ Detailed notes for the first snapshot are in `docs/releases/v0.1.0.md`.
 
 ## Next work
 
-The next useful pass is a player-controlled in-game evaluation of varied messages, followed by richer relationship events only if the simple sentiment model proves insufficient.
+The v0.4.2 prototype is frozen as the current working demonstration. Its repeatable demo, observed use cases, verification record, and known limitations are documented in `docs/WORKING_PROTOTYPE.md`.
+
+When development resumes, create a new checkpoint before changing behavior. The next useful pass is to improve gradual reconciliation and positive-stage variation, then compare it against the frozen demonstration rather than replacing several architecture pieces at once.
