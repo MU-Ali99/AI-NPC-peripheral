@@ -33,13 +33,7 @@ Start the system from the project folder:
 .\scripts\start-system.ps1
 ```
 
-Launch the game through:
-
-```text
-C:\Games\Stardew Valley\StardewModdingAPI.exe
-```
-
-Load a save, stand within four tiles of Linus or Abigail, press `Alt+0`, type a message, and press Enter. Escape cancels text entry or a request in progress.
+Launch the game through `StardewModdingAPI.exe` in your own Stardew Valley folder. Load a save, stand within four tiles of Linus or Abigail, press `Alt+0`, type a message, and press Enter. Escape cancels text entry or a request in progress.
 
 ## Suggested live demo
 
