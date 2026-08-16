@@ -27,7 +27,7 @@ class Settings:
     positive_delta: int = 10
     neutral_delta: int = 0
     negative_delta: int = -10
-    recent_history_limit: int = 6
+    recent_history_limit: int = 4
 
     @property
     def sentiment_deltas(self) -> dict[str, int]:

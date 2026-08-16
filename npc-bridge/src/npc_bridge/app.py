@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import sqlite3
 import time
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from . import __version__
 from .backends import LlmBackend, LlmBackendError, OllamaBackend
@@ -30,7 +31,13 @@ def create_app(settings: Settings | None = None, backend: LlmBackend | None = No
     profiles = ProfileStore(settings.profiles_path)
     persona = PersonaEngine(backend, settings.maximum_characters)
     memory = MemoryStore(settings.memory_path, settings.initial_relationship_score)
-    api = FastAPI(title="NPCBridge", version=__version__)
+    @asynccontextmanager
+    async def lifespan(_: FastAPI):
+        if isinstance(backend,OllamaBackend):
+            await backend.warmup()
+        yield
+
+    api = FastAPI(title="NPCBridge", version=__version__,lifespan=lifespan)
 
     @api.get("/health")
     async def health() -> dict:

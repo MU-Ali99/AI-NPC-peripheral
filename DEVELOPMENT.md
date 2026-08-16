@@ -142,6 +142,10 @@ Removed the bridge's phrase dictionaries and scripted NPC replies. The model now
 
 Replaced Gemma 3 4B with the non-thinking Qwen 3 4B Instruct 2507 release. Added distinct acting direction for every relationship stage and quality checks against terse or repeated dialogue. Local packaged tests showed stronger confrontation and exact recall, though positive-stage differences remain subtler than hostile-stage differences and CPU responses commonly take 30–40 seconds.
 
+### v0.4.2
+
+Reduced recent prompt history from six turns to four, reduced the context window from 4096 to 3072 tokens, and capped output at 140 tokens. NPCBridge now preloads Qwen at startup and keeps it resident for 30 minutes. Diagnostic logs record load, prompt, generation, token, retry, and total timings. In a source-mode comparison on this CPU, the first cold request took 54.6 seconds and the following warm request took 8.1 seconds.
+
 Detailed notes for the first snapshot are in `docs/releases/v0.1.0.md`.
 
 ## Next work

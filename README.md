@@ -161,4 +161,4 @@ NPCBridge binds to `127.0.0.1` by default. A future game adapter can point to a 
 - No generated quests or character movement
 - No API authentication while running on localhost
 
-The first working snapshot is tagged `v0.1.0`. Version `v0.4.0` moves language judgment into the model and makes NPCBridge the transactional owner of scores and conversation history. Version `v0.4.1` changes the model and makes relationship stages explicit acting directions. Earlier release details are kept in `docs/releases`.
+The first working snapshot is tagged `v0.1.0`. Version `v0.4.0` moves language judgment into the model and makes NPCBridge the transactional owner of scores and conversation history. Version `v0.4.1` changes the model and makes relationship stages explicit acting directions. Version `v0.4.2` preloads the model and reduces prompt/generation work for faster warm responses. Earlier release details are kept in `docs/releases`.

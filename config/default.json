@@ -19,6 +19,6 @@
     "negativeDelta": -10
   },
   "memory": {
-    "recentHistoryLimit": 6
+    "recentHistoryLimit": 4
   }
 }

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import re
 from typing import Any
 from pydantic import ValidationError
@@ -8,6 +9,8 @@ from .backends import LlmBackend, LlmBackendError
 from .memory import HistoryTurn, RelationshipSnapshot
 from .models import ConversationRequestV2, ModelDialogue
 from .profiles import NpcProfile
+
+logger = logging.getLogger("npc_bridge")
 
 OUTPUT_SCHEMA: dict[str,Any] = {
     "type":"object","additionalProperties":False,
@@ -60,6 +63,7 @@ Return exactly the required JSON object."""
                 return parsed.model_copy(update={"dialogue":self.clean_dialogue(parsed.dialogue,limit)})
             except (ValidationError,json.JSONDecodeError,KeyError,TypeError,ValueError) as exc:
                 last_error=exc
+                logger.warning("Dialogue validation retry npc=%s attempt=%d reason=%s",profile.id,attempt+1,correction or type(exc).__name__)
         raise LlmBackendError("The language model returned invalid dialogue data.") from last_error
 
     @staticmethod
@@ -106,9 +110,10 @@ Identity and personality:
 Required output shape:
 {{"dialogue":"spoken words only","sentiment":"POSITIVE or NEUTRAL or NEGATIVE","facialExpression":"facial expression only"}}"""
         recent=[{"player":turn.player_message,"npc":turn.npc_dialogue,"sentiment":turn.sentiment,"scoreAfter":turn.score_after} for turn in history]
-        context={"world":request.world.model_dump(exclude_none=True) if request.world else None,
-                 "relationship":{"score":relationship.score,"state":relationship.state},
-                 "recentCompletedHistory":recent}
+        world=None
+        if request.world:
+            world={key:value for key,value in request.world.model_dump(exclude_none=True,exclude={"custom"}).items()}
+        context={"world":world,"recentCompletedHistory":recent}
         user=f"""CONTEXT
 {json.dumps(context,ensure_ascii=False)}
 
